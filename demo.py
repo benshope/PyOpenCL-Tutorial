@@ -2,6 +2,9 @@ import pyopencl as cl
 import numpy
 import numpy.linalg as la
 
+
+PYOPENCL_CTX='1'
+
 a = numpy.random.rand(50000).astype(numpy.float32)
 b = numpy.random.rand(50000).astype(numpy.float32)
 
@@ -26,5 +29,9 @@ prg.sum(queue, a.shape, None, a_buf, b_buf, dest_buf)
 
 a_plus_b = numpy.empty_like(a)
 cl.enqueue_copy(queue, a_plus_b, dest_buf)
+
+print a
+print b
+print a + b
 
 print la.norm(a_plus_b - (a+b))
