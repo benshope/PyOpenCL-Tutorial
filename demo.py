@@ -3,7 +3,6 @@ import numpy
 import numpy.linalg as la
 
 
-PYOPENCL_CTX='1'
 
 a = numpy.random.rand(50000).astype(numpy.float32)
 b = numpy.random.rand(50000).astype(numpy.float32)
