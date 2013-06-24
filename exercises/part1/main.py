@@ -22,7 +22,6 @@ class CL:
 
     def popCorn(self): # why is this called popcorn?
         mf = cl.mem_flags # memory flags are some kind of sub-module of cl?  why are they called flags?
-        print inspect.getdoc(mf)
         #initialize client side (CPU) arrays
         self.a = numpy.array(range(10), dtype=numpy.float32)
         self.b = numpy.array(range(10), dtype=numpy.float32)
