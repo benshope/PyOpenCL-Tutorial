@@ -18,7 +18,7 @@ class CL:
         #create the program
         self.program = cl.Program(self.ctx, fstr).build()
 
-    def popCorn(self):
+    def popCorn(self): #why is this called popcorn?
         mf = cl.mem_flags
 
         #initialize client side (CPU) arrays
