@@ -18,8 +18,8 @@ class CL:
         #create the program
         self.program = cl.Program(self.ctx, fstr).build()
 
-    def popCorn(self): #why is this called popcorn?
-        mf = cl.mem_flags
+    def popCorn(self): # why is this called popcorn?
+        mf = cl.mem_flags # memory flags are some kind of sub-module of cl?  why are they called flags?
 
         #initialize client side (CPU) arrays
         self.a = numpy.array(range(10), dtype=numpy.float32)
