@@ -9,7 +9,7 @@ from fabric.api import local
 
 def run():
     """ start the local app server """
-    local("python 'Run the application'")
+    local("python demo.py")
 
 def commit(m="Fab-update the app"):
     """ save the to github """

@@ -4,23 +4,25 @@
 
 import pyopencl as cl
 import numpy
+import inspect
 
 class CL:
     def __init__(self):
-        self.ctx = cl.create_some_context()
-        self.queue = cl.CommandQueue(self.ctx)
+        self.ctx = cl.create_some_context()  # why is this named with underscores?
+        self.queue = cl.CommandQueue(self.ctx) # why is this named with no underscores?
 
-    def loadProgram(self, filename):
+    def loadProgram(self, kernelfile):
         #read in the OpenCL source file as a string
-        f = open(filename, 'r')
-        fstr = "".join(f.readlines())
-        print fstr
+        f = open(kernelfile, 'r')
+        kernel = "".join(f.readlines())
+        print kernel
         #create the program
-        self.program = cl.Program(self.ctx, fstr).build()
+        #to build the program - why do we only need the context and kernel?  why not the queue too?
+        self.program = cl.Program(self.ctx, kernel).build()
 
     def popCorn(self): # why is this called popcorn?
         mf = cl.mem_flags # memory flags are some kind of sub-module of cl?  why are they called flags?
-
+        print inspect.getdoc(mf)
         #initialize client side (CPU) arrays
         self.a = numpy.array(range(10), dtype=numpy.float32)
         self.b = numpy.array(range(10), dtype=numpy.float32)
