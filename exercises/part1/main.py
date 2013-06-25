@@ -29,12 +29,12 @@ class CL:
         #create OpenCL buffers
         self.a_buf = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=self.a)
         self.b_buf = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=self.b)
-        self.dest_buf = cl.Buffer(self.ctx, mf.WRITE_ONLY, self.b.nbytes)
+        self.c_buf = cl.Buffer(self.ctx, mf.WRITE_ONLY, self.b.nbytes)
 
     def execute(self):
-        self.program.part1(self.queue, self.a.shape, None, self.a_buf, self.b_buf, self.dest_buf)
+        self.program.part1(self.queue, self.a.shape, None, self.a_buf, self.b_buf, self.c_buf)
         c = numpy.empty_like(self.a)
-        cl.enqueue_read_buffer(self.queue, self.dest_buf, c).wait()
+        cl.enqueue_read_buffer(self.queue, self.c_buf, c).wait()
         print "a", self.a
         print "b", self.b
         print "c", c
