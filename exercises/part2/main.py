@@ -1,11 +1,11 @@
-# Basic GLUT setup learned from here:
-# http://www.java2s.com/Open-Source/Python/Game-2D-3D/PyOpenGL/PyOpenGL-Demo-3.0.1b1/PyOpenGL-Demo/NeHe/lesson2.py.htm
+# http://pyopengl.sourceforge.net/documentation/manual-3.0/index.xhtml
+# http://pyopengl.sourceforge.net/context/tutorials/nehe1.xhtml
 
 # === LIBRARIES ===
 from OpenGL.GL import *  # Wrapper to communicate with OpenGL
-from OpenGL.GLU import *  #  Some tools for OpenGL (mipmaps, NURBS, perspective project, shapes)
+from OpenGL.GLU import *  #  Some tools for OpenGL (mipmaps, NURBS, perspective projection, shapes)
 from OpenGL.GLUT import *  # Make a visualization window
-import sys # System tools (e.g. path, modules, maxint)
+import sys # System tools (path, modules, maxint)
 
 # === LOCAL FILES ===
 import glutil
@@ -14,11 +14,11 @@ import part2 # OpenCL Kernels
 import initialize  # Functions for initial values of particles
 
 num = 20000  # Number of particles
-dt = .001  # Time step for integration
+dt = .001  # Time step ??? for integration ???
 
 class window(object):
     def __init__(self, *args, **kwargs):
-        #mouse handling for transforming scene
+        # Mouse handling initial values
         self.mouse_down = False
         self.mouse_old = Vec([0., 0.])
         self.rotate = Vec([0., 0., 0.])
