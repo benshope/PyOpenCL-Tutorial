@@ -1,5 +1,5 @@
-#basic glut setup learned from here:
-#http://www.java2s.com/Open-Source/Python/Game-2D-3D/PyOpenGL/PyOpenGL-Demo-3.0.1b1/PyOpenGL-Demo/NeHe/lesson2.py.htm
+# Basic GLUT setup learned from here:
+# http://www.java2s.com/Open-Source/Python/Game-2D-3D/PyOpenGL/PyOpenGL-Demo-3.0.1b1/PyOpenGL-Demo/NeHe/lesson2.py.htm
 
 # === LIBRARIES ===
 from OpenGL.GL import *  # Wrapper to communicate with OpenGL
@@ -7,16 +7,14 @@ from OpenGL.GLU import *  #  Some tools for OpenGL (mipmaps, NURBS, perspective 
 from OpenGL.GLUT import *  # Make a visualization window
 import sys # System tools (e.g. path, modules, maxint)
 
-# === PROGRAM FILES ===
+# === LOCAL FILES ===
 import glutil
 from vector import Vec
 import part2 # OpenCL Kernels
 import initialize  # Functions for initial values of particles
 
-#number of particles
-num = 20000
-#time step for integration
-dt = .001
+num = 20000  # Number of particles
+dt = .001  # Time step for integration
 
 class window(object):
     def __init__(self, *args, **kwargs):
@@ -30,34 +28,33 @@ class window(object):
         self.width = 640
         self.height = 480
 
+        # Initialize the window
         glutInit(sys.argv)
         glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
         glutInitWindowSize(self.width, self.height)
         glutInitWindowPosition(0, 0)
         self.win = glutCreateWindow("Part 2: Python")
 
-        #gets called by GLUT every frame
+        # Draw current frame
         glutDisplayFunc(self.draw)
 
-        #handle user input
+        # Accept user input
         glutKeyboardFunc(self.on_key)
         glutMouseFunc(self.on_click)
         glutMotionFunc(self.on_mouse_motion)
 
-        #this will call draw every 30 ms
+        # Call draw every 30 milliseconds
         glutTimerFunc(30, self.timer, 30)
 
-        #setup OpenGL scene
+        # Set up OpenGL scene
         self.glinit()
-
-        #set up initial conditions
         (pos_vbo, col_vbo, vel) = initialize.fountain(num)
-        #create our OpenCL instance
+
+        # Create the OpenCL instance
         self.cle = part2.Part2(num, dt)
         self.cle.loadData(pos_vbo, col_vbo, vel)
 
         glutMainLoop()
-
 
     def glinit(self):
         glViewport(0, 0, self.width, self.height)
@@ -66,15 +63,13 @@ class window(object):
         gluPerspective(60., self.width / float(self.height), .1, 1000.)
         glMatrixMode(GL_MODELVIEW)
 
-
     ###GL CALLBACKS
     def timer(self, t):
         glutTimerFunc(t, self.timer, t)
         glutPostRedisplay()
 
     def on_key(self, *args):
-        ESCAPE = '\033'
-        if args[0] == ESCAPE or args[0] == 'q':
+        if args[0] == 'q':
             sys.exit()
         elif args[0] == 't':
             print self.cle.timings
@@ -88,7 +83,6 @@ class window(object):
         self.mouse_old.x = x
         self.mouse_old.y = y
 
-
     def on_mouse_motion(self, x, y):
         dx = x - self.mouse_old.x
         dy = y - self.mouse_old.y
@@ -99,8 +93,6 @@ class window(object):
             self.translate.z -= dy * .01
         self.mouse_old.x = x
         self.mouse_old.y = y
-    ###END GL CALLBACKS
-
 
     def draw(self):
         """Render the particles"""
@@ -127,10 +119,5 @@ class window(object):
         glutSwapBuffers()
 
 
-
-
 if __name__ == "__main__":
     p2 = window()
-
-
-
