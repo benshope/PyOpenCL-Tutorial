@@ -1,19 +1,17 @@
 #basic glut setup learned from here:
 #http://www.java2s.com/Open-Source/Python/Game-2D-3D/PyOpenGL/PyOpenGL-Demo-3.0.1b1/PyOpenGL-Demo/NeHe/lesson2.py.htm
 
+# === LIBRARIES ===
 from OpenGL.GL import *  # Wrapper to communicate with OpenGL
 from OpenGL.GLU import *  #  Some tools for OpenGL (mipmaps, NURBS, perspective project, shapes)
 from OpenGL.GLUT import *  # Make a visualization window
 import sys # System tools (e.g. path, modules, maxint)
 
-#helper modules
+# === PROGRAM FILES ===
 import glutil
 from vector import Vec
-
-#OpenCL code
-import part2
-#functions for initial values of particles
-import initialize
+import part2 # OpenCL Kernels
+import initialize  # Functions for initial values of particles
 
 #number of particles
 num = 20000
