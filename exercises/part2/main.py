@@ -1,9 +1,9 @@
 #basic glut setup learned from here:
 #http://www.java2s.com/Open-Source/Python/Game-2D-3D/PyOpenGL/PyOpenGL-Demo-3.0.1b1/PyOpenGL-Demo/NeHe/lesson2.py.htm
 
-from OpenGL.GL import *
-from OpenGL.GLU import *
-from OpenGL.GLUT import *
+from OpenGL.GL import *  # Wrapper to communicate with OpenGL
+from OpenGL.GLU import *  #  Some tools for OpenGL (mipmaps, NURBS, perspective projection, primitive shapes)
+from OpenGL.GLUT import *  # Make a visualization window
 import sys
 
 #helper modules
@@ -45,7 +45,7 @@ class window(object):
         glutKeyboardFunc(self.on_key)
         glutMouseFunc(self.on_click)
         glutMotionFunc(self.on_mouse_motion)
-        
+
         #this will call draw every 30 ms
         glutTimerFunc(30, self.timer, 30)
 
@@ -59,7 +59,7 @@ class window(object):
         self.cle.loadData(pos_vbo, col_vbo, vel)
 
         glutMainLoop()
-        
+
 
     def glinit(self):
         glViewport(0, 0, self.width, self.height)
@@ -90,7 +90,7 @@ class window(object):
         self.mouse_old.x = x
         self.mouse_old.y = y
 
-    
+
     def on_mouse_motion(self, x, y):
         dx = x - self.mouse_old.x
         dy = y - self.mouse_old.y
@@ -98,16 +98,16 @@ class window(object):
             self.rotate.x += dy * .2
             self.rotate.y += dx * .2
         elif self.mouse_down and self.button == 2: #right button
-            self.translate.z -= dy * .01 
+            self.translate.z -= dy * .01
         self.mouse_old.x = x
         self.mouse_old.y = y
     ###END GL CALLBACKS
 
 
     def draw(self):
-        """Render the particles"""        
+        """Render the particles"""
         #update or particle positions by calling the OpenCL kernel
-        self.cle.execute(10) 
+        self.cle.execute(10)
         glFlush()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -119,7 +119,7 @@ class window(object):
         glRotatef(self.rotate.x, 1, 0, 0)
         glRotatef(self.rotate.y, 0, 1, 0) #we switched around the axis so make this rotate_z
         glTranslatef(self.translate.x, self.translate.y, self.translate.z)
-        
+
         #render the particles
         self.cle.render()
 
