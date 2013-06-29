@@ -49,7 +49,7 @@ class Vec(np.ndarray):
             return
         self.__dict__[Vec.props[ind]] = val
         return np.ndarray.__setitem__(self, ind, val)
-    
+
     def __setattr__(self, item, val):
         self[Vec.props.index(item)] = val
 
@@ -61,7 +61,7 @@ class Vec(np.ndarray):
 def normalize(u):
     return u / (math.sqrt(np.dot(u, u)))
 
-
+# Test code here?
 if __name__ == "__main__":
     v1 = Vec(np.arange(2))
     v2 = Vec(np.arange(2))
@@ -96,4 +96,4 @@ if __name__ == "__main__":
 
 
 
-    
+

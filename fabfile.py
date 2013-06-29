@@ -2,7 +2,6 @@
     REQUIREMENTS:
         - install pip with distribute (http://packages.python.org/distribute/)
         - sudo pip install Fabric
-
 """
 
 from fabric.api import local

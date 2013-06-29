@@ -2,9 +2,9 @@
 #http://www.java2s.com/Open-Source/Python/Game-2D-3D/PyOpenGL/PyOpenGL-Demo-3.0.1b1/PyOpenGL-Demo/NeHe/lesson2.py.htm
 
 from OpenGL.GL import *  # Wrapper to communicate with OpenGL
-from OpenGL.GLU import *  #  Some tools for OpenGL (mipmaps, NURBS, perspective projection, primitive shapes)
+from OpenGL.GLU import *  #  Some tools for OpenGL (mipmaps, NURBS, perspective project, shapes)
 from OpenGL.GLUT import *  # Make a visualization window
-import sys
+import sys # System tools (e.g. path, modules, maxint)
 
 #helper modules
 import glutil
