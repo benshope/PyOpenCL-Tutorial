@@ -12,7 +12,7 @@ def run():
     local("python demo.py")
 
 # Example:  fab commit:m="First commit"
-def commit(m="Fab-update the app"):
+def update(m="Fab-update the app"):
     """ save the to github """
     local("git add .")
     local("git commit -a -m '{0}'".format(m))
