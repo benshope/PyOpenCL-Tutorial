@@ -7,7 +7,7 @@ context = cl.create_some_context()  # Create a Context (one per computer)
 queue = cl.CommandQueue(context)  # Create a Command Queue (usually one per processor)
 kernel = """__kernel void sum(__global float* a, __global float* b, __global float* c)
 {
-    unsigned int i = get_global_id(0);
+    int i = get_global_id(0);
     c[i] = a[i] + b[i];
 }"""  # The C-like code that will run on the GPU
 
