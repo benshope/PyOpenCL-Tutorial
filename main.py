@@ -12,13 +12,13 @@ kernel = """__kernel void multiply(__global float* a, __global float* b, __globa
 }"""  # The kernel is the C code that will run on the GPU
 
 program = cl.Program(context, kernel).build() # compile the kernel into a Program
-# ??? Why doesn't compilation require the name of a device ???
+# ??? Why doesn't compilation require the name of a specific device ???
 # It seems like this step would need a specific processor to compile to
 flags = cl.mem_flags
-# No idea what these 'flags' are
+# No idea what these 'flag' things do...
 
-a = numpy.array(range(10), dtype=numpy.float32)
-b = numpy.array(range(10), dtype=numpy.float32)
+a = numpy.array(range(100), dtype=numpy.float32)
+b = numpy.array(range(100), dtype=numpy.float32)  # Create two large random arrays
 
 a_buf = cl.Buffer(context, flags.READ_ONLY | flags.COPY_HOST_PTR, hostbuf=a)
 b_buf = cl.Buffer(context, flags.READ_ONLY | flags.COPY_HOST_PTR, hostbuf=b)
