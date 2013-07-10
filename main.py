@@ -1,7 +1,8 @@
 # The simplest possible PyOpenCL program
 
-import pyopencl as cl
-import numpy
+import pyopencl as cl # The mysterious Python CL bindings
+# ??? What is a binding, how does it differ from a library/package ???
+import numpy # The tools to create primitive numbers and arrays
 
 context = cl.create_some_context()  # create a Context (one per computer)
 queue = cl.CommandQueue(context) # create a Command Queue (one per processor)
