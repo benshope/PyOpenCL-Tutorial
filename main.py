@@ -12,7 +12,7 @@ import pyopencl as cl # The mysterious Python CL bindings
 # A big part of the reason why it is so complicated, is because
 # The system does not get locked-down at any point.  Everything is still
 # ready to be configured, because OpenCL has to support applications that
-# will change around a lot of shit after initial setup.
+# will change around a lot after initial setup.
 
 import numpy # The tools to create primitive numbers and arrays
 
