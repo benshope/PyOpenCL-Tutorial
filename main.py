@@ -1,49 +1,33 @@
-#Port from Adventures in OpenCL Part1 to PyOpenCL
-# http://enja.org/2010/07/13/adventures-in-opencl-part-1-getting-started/
-# http://documen.tician.de/pyopencl/
+# The simplest possible PyOpenCL program
 
 import pyopencl as cl
 import numpy
-import inspect
 
-class CL:
-    def __init__(self):
-        self.ctx = cl.create_some_context()  # why is this named with underscores?
-        self.queue = cl.CommandQueue(self.ctx) # why is this named with no underscores?
+context = cl.create_some_context()  # create a Context (one per computer)
+queue = cl.CommandQueue(context) # create a Command Queue (one per processor)
+kernel = """__kernel void multiply(__global float* a, __global float* b, __global float* c)
+{
+    unsigned int i = get_global_id(0);
+    c[i] = a[i] * b[i];
+}"""  # The kernel is the C code that will run on the GPU
 
-    def loadProgram(self, kernelfile):
-        #read in the OpenCL source file as a string
-        f = open(kernelfile, 'r')
-        kernel = "".join(f.readlines())
-        print kernel
-        #create the program
-        #to build the program - why do we only need the context and kernel?  why not the queue too?
-        self.program = cl.Program(self.ctx, kernel).build()
+program = cl.Program(context, kernel).build() # compile the kernel into a Program
+# ??? Why doesn't compilation require the name of a device ???
+# It seems like this step would need a specific processor to compile to
+flags = cl.mem_flags
+# No idea what these 'flags' are
 
-    def popCorn(self): # why is this called popcorn?
-        mf = cl.mem_flags # memory flags are some kind of sub-module of cl?  why are they called flags?
-        #initialize client side (CPU) arrays
-        self.a = numpy.array(range(10), dtype=numpy.float32)
-        self.b = numpy.array(range(10), dtype=numpy.float32)
+a = numpy.array(range(10), dtype=numpy.float32)
+b = numpy.array(range(10), dtype=numpy.float32)
 
-        #create OpenCL buffers
-        self.a_buf = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=self.a)
-        self.b_buf = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=self.b)
-        self.c_buf = cl.Buffer(self.ctx, mf.WRITE_ONLY, self.b.nbytes)
+a_buf = cl.Buffer(context, flags.READ_ONLY | flags.COPY_HOST_PTR, hostbuf=a)
+b_buf = cl.Buffer(context, flags.READ_ONLY | flags.COPY_HOST_PTR, hostbuf=b)
+c_buf = cl.Buffer(context, flags.WRITE_ONLY, b.nbytes)
 
-    def execute(self):
-        self.program.part1(self.queue, self.a.shape, None, self.a_buf, self.b_buf, self.c_buf)
-        c = numpy.empty_like(self.a)
-        cl.enqueue_read_buffer(self.queue, self.c_buf, c).wait()
-        print "a", self.a
-        print "b", self.b
-        print "c", c
+program.multiply(queue, a.shape, None, a_buf, b_buf, c_buf)
+c = numpy.empty_like(a)
+cl.enqueue_read_buffer(queue, c_buf, c).wait()
 
-
-
-if __name__ == "__main__":
-    example = CL()
-    example.loadProgram("part1.cl")
-    example.popCorn()
-    example.execute()
-
+print "a", a
+print "b", b
+print "c", c
