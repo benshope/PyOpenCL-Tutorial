@@ -1,30 +1,29 @@
-# The simplest possible PyOpenCL program
+# The simplest possible PyOpenCL program - Sums two arrays
 
-import pyopencl as cl # access to the OpenCL parallel computation API
+import pyopencl as cl # Access to the OpenCL API
+import numpy # Tools to create and manipulate numbers
 
-import numpy # The tools to create primitive numbers and arrays
-
-context = cl.create_some_context()  # create a Context (one per computer)
-queue = cl.CommandQueue(context)  # create a Command Queue (one per processor)
-kernel = """__kernel void multiply(__global float* a, __global float* b, __global float* c)
+context = cl.create_some_context()  # Create a Context (one per computer)
+queue = cl.CommandQueue(context)  # Create a Command Queue (usually one per processor)
+kernel = """__kernel void sum(__global float* a, __global float* b, __global float* c)
 {
     unsigned int i = get_global_id(0);
-    c[i] = a[i] * b[i];
-}"""  # The kernel is the C-ish code that will run on the GPU
+    c[i] = a[i] + b[i];
+}"""  # The C-like code that will run on the GPU
 
 program = cl.Program(context, kernel).build() # Compile the kernel into a Program
-# ??? Why doesn't compilation require the name of a specific device ???
-flags = cl.mem_flags
 
-a = numpy.random.rand(10).astype(numpy.float32)
-b = numpy.random.rand(10).astype(numpy.float32)  # Create two arrays of random floats
+flags = cl.mem_flags # Create a shortcut to OpenCL's memory instructions
+
+a = numpy.random.rand(5).astype(numpy.float32)
+b = numpy.random.rand(5).astype(numpy.float32)  # Create two large float arrays
+
 
 a_buffer = cl.Buffer(context, flags.COPY_HOST_PTR, hostbuf=a)
 b_buffer = cl.Buffer(context, flags.COPY_HOST_PTR, hostbuf=b)
-c_buffer = cl.Buffer(context, flags, b.nbytes)  # Allocate memory ???
-# ??? Am I allocating this memory on the host, device, or both ???
+c_buffer = cl.Buffer(context, flags.WRITE_ONLY, b.nbytes)  # Allocate memory ???
 
-program.multiply(queue, a.shape, None, a_buffer, b_buffer, c_buffer)
+program.sum(queue, a.shape, None, a_buffer, b_buffer, c_buffer)
 # call the program with arguments:
 # queue - the command queue this program will be sent to
 # a.shape - a tuple of the array's dimensions
