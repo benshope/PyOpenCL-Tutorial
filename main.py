@@ -19,7 +19,7 @@ flags = cl.mem_flags
 
 a = numpy.array(range(1000), dtype=numpy.float32)
 b = numpy.array(range(1000), dtype=numpy.float32)  # Create two large float arrays
-# !!! It might be a better illustration if these were random !!!
+# !!! It might be a better illustration if these numbers were random !!!
 
 a_buf = cl.Buffer(context, flags.READ_ONLY | flags.COPY_HOST_PTR, hostbuf=a)
 b_buf = cl.Buffer(context, flags.READ_ONLY | flags.COPY_HOST_PTR, hostbuf=b)
@@ -33,4 +33,4 @@ cl.enqueue_read_buffer(queue, c_buf, c).wait()  # Execute everything and copy ba
 
 print "a", a
 print "b", b
-print "c", c  # Print all the values
+print "c", c  # Print everything, to show the demo worked
