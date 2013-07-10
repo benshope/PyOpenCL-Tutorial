@@ -2,6 +2,18 @@
 
 import pyopencl as cl # The mysterious Python CL bindings
 # ??? What is a binding, how does it differ from a library/package ???
+
+# I picture this as a monster, like the sarlac from Star Wars
+# After you import pyopencl, it just waits there
+# wanting to be fed arrays, programs, etc.
+# I consider the queues like feeding tentacles going to this monster
+# Programs - ??? how do they fit into this metaphor ???
+# Flags are like music (to make the monster happy or sad)?
+# A big part of the reason why it is so complicated, is because
+# The system does not get locked-down at any point.  Everything is still
+# ready to be configured, because OpenCL has to support applications that
+# will change around a lot of shit after initial setup.
+
 import numpy # The tools to create primitive numbers and arrays
 
 context = cl.create_some_context()  # create a Context (one per computer)
