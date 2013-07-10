@@ -23,11 +23,10 @@ a_buffer = cl.Buffer(context, flags.COPY_HOST_PTR, hostbuf=a)
 b_buffer = cl.Buffer(context, flags.COPY_HOST_PTR, hostbuf=b)
 c_buffer = cl.Buffer(context, flags.WRITE_ONLY, b.nbytes)  # Allocate memory ???
 
-program.sum(queue, a.shape, None, a_buffer, b_buffer, c_buffer)
+program.sum(queue, a.shape, a_buffer, b_buffer, c_buffer)
 # call the program with arguments:
 # queue - the command queue this program will be sent to
 # a.shape - a tuple of the array's dimensions
-# None - ???
 # a.buffer, b.buffer, c.buffer - the three memory spaces this program deals with
 
 c = numpy.empty_like(a) # Create a correctly-sized array
