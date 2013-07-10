@@ -1,6 +1,12 @@
-# The simplest possible PyOpenCL program - Sums two arrays
+# Discover everything we need to know about the system
 
 import pyopencl as cl # Access to the OpenCL API
+
+print dir(cl)  # Print all the methods available in PyOpenCL
+
+
+
+
 import numpy # Tools to create and manipulate numbers
 
 context = cl.create_some_context()  # Create a Context (one per computer)
