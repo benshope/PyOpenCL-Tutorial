@@ -5,7 +5,7 @@ import pyopencl as cl # The mysterious Python CL bindings
 import numpy # The tools to create primitive numbers and arrays
 
 context = cl.create_some_context()  # create a Context (one per computer)
-queue = cl.CommandQueue(context) # create a Command Queue (one per processor)
+queue = cl.CommandQueue(context)  # create a Command Queue (one per processor)
 kernel = """__kernel void multiply(__global float* a, __global float* b, __global float* c)
 {
     unsigned int i = get_global_id(0);
