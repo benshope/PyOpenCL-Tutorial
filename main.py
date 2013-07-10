@@ -13,7 +13,6 @@ kernel = """__kernel void multiply(__global float* a, __global float* b, __globa
 
 program = cl.Program(context, kernel).build() # compile the kernel into a Program
 # ??? Why doesn't compilation require the name of a specific device ???
-# It seems like this step would need a specific processor to compile to
 flags = cl.mem_flags
 # ??? What do these 'flag' things do ???
 
