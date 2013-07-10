@@ -1,18 +1,7 @@
 # The simplest possible PyOpenCL program
 
-import pyopencl as cl # The mysterious Python CL bindings
+import pyopencl as cl # The mysterious Python OpenCL bindings
 # ??? What is a binding, how does it differ from a library/package ???
-
-# I picture this as a monster, like the sarlac from Star Wars
-# After you import pyopencl, it just waits there
-# wanting to be fed arrays, programs, etc.
-# I consider the queues like feeding tentacles going to this monster
-# Programs - ??? how do they fit into this metaphor ???
-# Flags are like music (to make the monster happy or sad)?
-# A big part of the reason why it is so complicated, is because
-# The system does not get locked-down at any point.  Everything is still
-# ready to be configured, because OpenCL has to support applications that
-# will change around a lot after initial setup.
 
 import numpy # The tools to create primitive numbers and arrays
 
@@ -22,7 +11,7 @@ kernel = """__kernel void multiply(__global float* a, __global float* b, __globa
 {
     unsigned int i = get_global_id(0);
     c[i] = a[i] * b[i];
-}"""  # The kernel is the C code that will run on the GPU
+}"""  # The kernel is the C-ish code that will run on the GPU
 
 program = cl.Program(context, kernel).build() # compile the kernel into a Program
 # ??? Why doesn't compilation require the name of a specific device ???
@@ -33,15 +22,15 @@ a = numpy.array(range(1000), dtype=numpy.float32)
 b = numpy.array(range(1000), dtype=numpy.float32)  # Create two large float arrays
 # !!! It might be a better illustration if these numbers were random !!!
 
-a_buf = cl.Buffer(context, flags.READ_ONLY | flags.COPY_HOST_PTR, hostbuf=a)
-b_buf = cl.Buffer(context, flags.READ_ONLY | flags.COPY_HOST_PTR, hostbuf=b)
-c_buf = cl.Buffer(context, flags.WRITE_ONLY, b.nbytes)  # Allocate memory ???
+a_buffer = cl.Buffer(context, flags.READ_ONLY | flags.COPY_HOST_PTR, hostbuf=a)
+b_buffer = cl.Buffer(context, flags.READ_ONLY | flags.COPY_HOST_PTR, hostbuf=b)
+c_buffer = cl.Buffer(context, flags.WRITE_ONLY, b.nbytes)  # Allocate memory ???
 # ??? Am I allocating this memory on the host, device, or both ???
 
-program.multiply(queue, a.shape, None, a_buf, b_buf, c_buf)
+program.multiply(queue, a.shape, None, a_buffer, b_buffer, c_buffer)
 # ??? Calling a routine on the compiled program seems a bit strange ???
 c = numpy.empty_like(a) # Create a correctly-sized array
-cl.enqueue_read_buffer(queue, c_buf, c).wait()  # Execute everything and copy back c
+cl.enqueue_read_buffer(queue, c_buffer, c).wait()  # Execute everything and copy back c
 
 print "a", a
 print "b", b
