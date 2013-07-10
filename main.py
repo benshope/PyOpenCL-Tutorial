@@ -1,7 +1,6 @@
 # The simplest possible PyOpenCL program
 
-import pyopencl as cl # The mysterious Python OpenCL bindings
-# ??? What is a binding, how does it differ from a library/package ???
+import pyopencl as cl # access to the OpenCL parallel computation API
 
 import numpy # The tools to create primitive numbers and arrays
 
@@ -13,17 +12,16 @@ kernel = """__kernel void multiply(__global float* a, __global float* b, __globa
     c[i] = a[i] * b[i];
 }"""  # The kernel is the C-ish code that will run on the GPU
 
-program = cl.Program(context, kernel).build() # compile the kernel into a Program
+program = cl.Program(context, kernel).build() # Compile the kernel into a Program
 # ??? Why doesn't compilation require the name of a specific device ???
 flags = cl.mem_flags
 
-a = numpy.array(range(1000), dtype=numpy.float32)
-b = numpy.array(range(1000), dtype=numpy.float32)  # Create two large float arrays
-# !!! It might be a better illustration if these numbers were random !!!
+a = numpy.random.rand(10).astype(numpy.float32)
+b = numpy.random.rand(10).astype(numpy.float32)  # Create two arrays of random floats
 
-a_buffer = cl.Buffer(context, flags.READ_ONLY | flags.COPY_HOST_PTR, hostbuf=a)
-b_buffer = cl.Buffer(context, flags.READ_ONLY | flags.COPY_HOST_PTR, hostbuf=b)
-c_buffer = cl.Buffer(context, flags.WRITE_ONLY, b.nbytes)  # Allocate memory ???
+a_buffer = cl.Buffer(context, flags.COPY_HOST_PTR, hostbuf=a)
+b_buffer = cl.Buffer(context, flags.COPY_HOST_PTR, hostbuf=b)
+c_buffer = cl.Buffer(context, flags, b.nbytes)  # Allocate memory ???
 # ??? Am I allocating this memory on the host, device, or both ???
 
 program.multiply(queue, a.shape, None, a_buffer, b_buffer, c_buffer)
