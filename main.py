@@ -1,5 +1,23 @@
 # Discover everything we need to know about the system
 
+# 02_Introspection will be the name of this document
+# 03_Timing?
+# 04_OpenGL_OpenCL?
+# 05_Async_Memory ?
+
+'''The purpose of this document will be to ask the host system everything
+about the context, buffers, devices, etc.
+
+I want to know how to ask the OpenCL API for some answers about itself,
+that can be used to get a solid sense of the system.
+
+At the end of this document, I want to use the ansers I get to make a slightly
+more complicated kernel.
+
+The next kernel OpenCL/OpenGL will show some real complexity and try to squeeze
+real performance out of the GPU.
+'''
+
 import pyopencl as cl # Access to the OpenCL API
 
 print "\n\nAll PyOpenCL Methods:\n"
@@ -39,7 +57,6 @@ program.sum(queue, a.shape, a_buffer, b_buffer, c_buffer)
 c = numpy.empty_like(a) # Create a correctly-sized array
 cl.enqueue_read_buffer(queue, c_buffer, c).wait()  # Execute everything and copy back c
 
-print cl.device_info
 # print "a", a
 # print "b", b
 # print "c", c  # Print everything, to show it worked
