@@ -2,10 +2,13 @@
 
 import pyopencl as cl # Access to the OpenCL API
 
+print "\n\nAll PyOpenCL Methods:\n"
 print dir(cl)  # Print all the methods available in PyOpenCL
 
+print "\n\ncl.device_info Methods:\n"
+print dir(cl.device_info) # Print the helpf for PyOpenCL
 
-
+print "\n\n\n"
 
 import numpy # Tools to create and manipulate numbers
 
@@ -36,6 +39,7 @@ program.sum(queue, a.shape, a_buffer, b_buffer, c_buffer)
 c = numpy.empty_like(a) # Create a correctly-sized array
 cl.enqueue_read_buffer(queue, c_buffer, c).wait()  # Execute everything and copy back c
 
-print "a", a
-print "b", b
-print "c", c  # Print everything, to show it worked
+print cl.device_info
+# print "a", a
+# print "b", b
+# print "c", c  # Print everything, to show it worked
