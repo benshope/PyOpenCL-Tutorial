@@ -1,7 +1,7 @@
 # Discover everything we need to know about the system
 
 # 02_Introspection will be the name of this document
-# 03_Timing?
+# 03_Shared/Global Memory
 # 04_OpenGL_OpenCL?
 # 05_Async_Memory ?
 
