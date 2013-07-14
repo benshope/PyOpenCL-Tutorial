@@ -1,4 +1,4 @@
-# Discover everything we need to know about the system
+# Discover more about the OpenCL API
 
 # 02_Introspection will be the name of this document
 # 03_Shared/Global Memory
