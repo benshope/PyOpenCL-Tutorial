@@ -5,6 +5,8 @@
 # 04_OpenGL_OpenCL?
 # 05_Async_Memory ?
 
+# Just use simpler operators?
+
 '''The purpose of this document will be to ask the host system everything
 about the context, buffers, devices, etc.
 
@@ -20,18 +22,11 @@ real performance out of the GPU.
 
 import pyopencl as cl # Access to the OpenCL API
 
-print "\n\nAll PyOpenCL Methods:\n"
-print dir(cl)  # Print all the methods available in PyOpenCL
-
-print "\n\ncl.device_info Methods:\n"
-print dir(cl.device_info) # Print the helpf for PyOpenCL
-
-print "\n\n\n"
-
 import numpy # Tools to create and manipulate numbers
 
 context = cl.create_some_context()  # Create a Context (one per computer)
 queue = cl.CommandQueue(context)  # Create a Command Queue (usually one per processor)
+
 kernel = """__kernel void sum(__global float* a, __global float* b, __global float* c)
 {
     int i = get_global_id(0);
@@ -56,7 +51,3 @@ program.sum(queue, a.shape, a_buffer, b_buffer, c_buffer)
 
 c = numpy.empty_like(a) # Create a correctly-sized array
 cl.enqueue_read_buffer(queue, c_buffer, c).wait()  # Execute everything and copy back c
-
-# print "a", a
-# print "b", b
-# print "c", c  # Print everything, to show it worked
