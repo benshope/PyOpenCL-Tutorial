@@ -24,7 +24,7 @@ glutDisplayFunc(draw)
 glutKeyboardFunc(key)
 glutMouseFunc(click)
 glutMotionFunc(mouse_move)
-glutTimerFunc(30, timer, 30)
+glutTimerFunc(30, tick, 30)
 
 glutInit(sys.argv)
 glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
@@ -43,11 +43,11 @@ glMatrixMode(GL_MODELVIEW)
 glutMainLoop()
 
 
-# ===== ACTION FUNCTIONS ===== just for holding code
+# ===== VERB FUNCTIONS ===== these are for holding code
 
-def timer(t):
-    glutTimerFunc(t, timer, t)
-    glutPostRedisplay()
+def tick(msecs):
+    glutTimerFunc(msecs, tick, msecs)   # Call a function in x msecs (msecs, func(value), value);
+    glutPostRedisplay()  # Mark the current window as needing to be redisplayed
 
 def key_press(*args):
     if args[0] == 'q':
