@@ -19,11 +19,13 @@ rotate = Vec([0., 0., 0.])
 translate = Vec([0., 0., 0.])
 initrans = Vec([0., 0., -2.])
 
+# Functions that are called on window events
 glutDisplayFunc(draw)
-glutKeyboardFunc(on_key)
-glutMouseFunc(on_click)
-glutMotionFunc(on_mouse_motion)
+glutKeyboardFunc(key)
+glutMouseFunc(click)
+glutMotionFunc(mouse_move)
 glutTimerFunc(30, timer, 30)
+
 glutInit(sys.argv)
 glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
 glutInitWindowSize(window_width, window_height)
@@ -40,17 +42,20 @@ glMatrixMode(GL_MODELVIEW)
 
 glutMainLoop()
 
+
+# ===== ACTION FUNCTIONS ===== just for holding code
+
 def timer(t):
     glutTimerFunc(t, timer, t)
     glutPostRedisplay()
 
-def on_key(*args):
+def key_press(*args):
     if args[0] == 'q':
         sys.exit()
     elif args[0] == 't':
         print cle.timings
 
-def on_click(button, state, x, y):
+def click(button, state, x, y):
     if state == GLUT_DOWN:
         mouse_down = True
         button = button
@@ -59,7 +64,7 @@ def on_click(button, state, x, y):
     mouse_old.x = x
     mouse_old.y = y
 
-def on_mouse_motion(x, y):
+def mouse_move(x, y):
     dx = x - mouse_old.x
     dy = y - mouse_old.y
     if mouse_down and button == 0: #left button
@@ -94,7 +99,7 @@ def draw():
 
     glutSwapBuffers()
 
-
+# ===== NOUN FUNCTIONS ===== these return something
 
 def buffers(num_particles):
     """Initialize position, color and velocity arrays we also make Vertex
