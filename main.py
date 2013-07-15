@@ -42,7 +42,6 @@ glMatrixMode(GL_MODELVIEW)
 
 glutMainLoop()
 
-
 # ===== VERB FUNCTIONS ===== these are for holding code
 
 def tick(msecs):
@@ -101,7 +100,7 @@ def draw():
 
 # ===== NOUN FUNCTIONS ===== these return something
 
-def buffers(num_particles):
+def buffers(num_particles):  # Initialize the arrays of particle data: position, color, and velocity
     """Initialize position, color and velocity arrays we also make Vertex
     Buffer Objects for the position and color arrays"""
 
@@ -134,9 +133,6 @@ def buffers(num_particles):
     col_vbo.bind()
 
     return (pos_vbo, col_vbo, vel)
-
-
-
 
 
 
