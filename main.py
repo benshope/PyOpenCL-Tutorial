@@ -1,28 +1,13 @@
-# Discover more about the OpenCL API
 
-# 02_Introspection will be the name of this document
-# 03_Shared/Global Memory
-# 04_OpenGL_OpenCL?
-# 05_Async_Memory ?
 
-# Just use simpler operators?
 
-'''The purpose of this document will be to ask the host system everything
-about the context, buffers, devices, etc.
-
-I want to know how to ask the OpenCL API for some answers about itself,
-that can be used to get a solid sense of the system.
-
-At the end of this document, I want to use the ansers I get to make a slightly
-more complicated kernel.
-
-The next kernel OpenCL/OpenGL will show some real complexity and try to squeeze
-real performance out of the GPU.
-'''
-
-import pyopencl as cl # Access to the OpenCL API
-
-import numpy # Tools to create and manipulate numbers
+import pyopencl as cl # OpenCL - GPU buffer computing interface
+from OpenGL.GL import *  # OpenGL - GPU image rendering interface
+from OpenGL.GLU import *  #  OpenGL tools (mipmaps, NURBS, perspective projection, shapes)
+from OpenGL.GLUT import *  # Make a visualization window
+import numpy # Tools to manipulate numbers
+import sys # System tools (path, modules, maxint)
+import time # What does this do?
 
 context = cl.create_some_context()  # Create a Context (one per computer)
 queue = cl.CommandQueue(context)  # Create a Command Queue (usually one per processor)

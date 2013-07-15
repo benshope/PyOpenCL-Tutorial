@@ -17,7 +17,7 @@ __kernel void part2(__global float4* pos, __global float4* color, __global float
     {
         p = pos_gen[i];
         v = vel_gen[i];
-        life = 1.0f;    
+        life = 1.0f;
     }
 
     //we use a first order euler method to integrate the velocity and position (i'll expand on this in another tutorial)
