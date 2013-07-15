@@ -9,7 +9,7 @@ import numpy # Complicated number tools
 import sys # System tools (path, modules, maxint)
 import time # What does this do?
 
-particles = 20000  # Number of particles
+num_particles = 20000  # Number of particles
 time_step = .001  # Time between each animation frame
 window_width = 640
 window_height = 480
@@ -36,7 +36,7 @@ glLoadIdentity()
 gluPerspective(60., window_width / float(window_height), .1, 1000.)
 glMatrixMode(GL_MODELVIEW)
 
-(pos_vbo, col_vbo, vel) = initialize.fountain(num)  # Set up OpenGL scene
+(pos_vbo, col_vbo, vel) = fountain(num_particles)  # Set up OpenGL scene
 
 glutMainLoop()
 
@@ -96,13 +96,39 @@ def draw():
 
 
 
+def buffers(num_particles):
+    """Initialize position, color and velocity arrays we also make Vertex
+    Buffer Objects for the position and color arrays"""
 
+    pos = numpy.ndarray((num, 4), dtype=numpy.float32)
+    col = numpy.ndarray((num, 4), dtype=numpy.float32)
+    vel = numpy.ndarray((num, 4), dtype=numpy.float32)
 
+    pos[:,0] = numpy.sin(numpy.arange(0., num) * 2.001 * numpy.pi / num)
+    pos[:,0] *= numpy.random.random_sample((num,)) / 3. + .2
+    pos[:,1] = numpy.cos(numpy.arange(0., num) * 2.001 * numpy.pi / num)
+    pos[:,1] *= numpy.random.random_sample((num,)) / 3. + .2
+    pos[:,2] = 0.
+    pos[:,3] = 1.
 
+    col[:,0] = 0.
+    col[:,1] = 1.
+    col[:,2] = 0.
+    col[:,3] = 1.
 
+    vel[:,0] = pos[:,0] * 2.
+    vel[:,1] = pos[:,1] * 2.
+    vel[:,2] = 3.
+    vel[:,3] = numpy.random.random_sample((num, ))
 
+    #create the Vertex Buffer Objects
+    from OpenGL.arrays import vbo
+    pos_vbo = vbo.VBO(data=pos, usage=GL_DYNAMIC_DRAW, target=GL_ARRAY_BUFFER)
+    pos_vbo.bind()
+    col_vbo = vbo.VBO(data=col, usage=GL_DYNAMIC_DRAW, target=GL_ARRAY_BUFFER)
+    col_vbo.bind()
 
-
+    return (pos_vbo, col_vbo, vel)
 
 
 
