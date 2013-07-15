@@ -1,16 +1,18 @@
+# OpenCL + OpenGL program - visualization of particles with gravity
 
-
-
-import pyopencl as cl # OpenCL - GPU buffer computing interface
-from OpenGL.GL import *  # OpenGL - GPU image rendering interface
+import pyopencl as cl # OpenCL - GPU computing interface
+from OpenGL.GL import *  # OpenGL - GPU rendering interface
 from OpenGL.GLU import *  #  OpenGL tools (mipmaps, NURBS, perspective projection, shapes)
-from OpenGL.GLUT import *  # Make a visualization window
+from OpenGL.GLUT import *  # OpenGL tool to make a visualization window
 import numpy # Tools to manipulate numbers
 import sys # System tools (path, modules, maxint)
 import time # What does this do?
 
 context = cl.create_some_context()  # Create a Context (one per computer)
-queue = cl.CommandQueue(context)  # Create a Command Queue (usually one per processor)
+queue = cl.CommandQueue(context)  # Create a Command Queue (one per processor)
+
+particles = 20000  # Number of particles
+time_step = .001  # Time between each frame
 
 kernel = """__kernel void part2(__global float4* pos, __global float4* color, __global float4* vel, __global float4* pos_gen, __global float4* vel_gen, float dt)
 {
