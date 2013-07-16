@@ -1,3 +1,0 @@
-pyopencl
-_pvt_struct
-_cl
