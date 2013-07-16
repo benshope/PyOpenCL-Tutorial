@@ -11,8 +11,8 @@ import time # What does this do?
 
 num_particles = 20000  # Number of particles
 time_step = .001  # Time between each animation frame
-window_width = 640
-window_height = 480
+window_width = 640  # Viewing window width
+window_height = 480  # Viewing window height
 mouse_down = False
 mouse_old = Vec([0., 0.])
 rotate = Vec([0., 0., 0.])
@@ -24,7 +24,7 @@ glutDisplayFunc(draw)
 glutKeyboardFunc(key)
 glutMouseFunc(click)
 glutMotionFunc(mouse_move)
-glutTimerFunc(30, tick, 30)
+glutTimerFunc(30, tick, 30)  # Call a function in x msecs (msecs, func(value), value)
 
 glutInit(sys.argv)
 glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
@@ -45,7 +45,7 @@ glutMainLoop()
 # ===== VERB FUNCTIONS ===== these are for holding code
 
 def tick(msecs):
-    glutTimerFunc(msecs, tick, msecs)   # Call a function in x msecs (msecs, func(value), value);
+    glutTimerFunc(msecs, tick, msecs)   # Call a function in x msecs (msecs, func(value), value)
     glutPostRedisplay()  # Mark the current window as needing to be redisplayed
 
 def key_press(*args):
@@ -126,7 +126,7 @@ def buffers(num_particles):  # Initialize the arrays of particle data: position,
     vel[:,3] = numpy.random.random_sample((num, ))
 
     #create the Vertex Buffer Objects
-    from OpenGL.arrays import vbo
+    from OpenGL.arrays import vbo  # XXXXXXXXXXXXXXX
     pos_vbo = vbo.VBO(data=pos, usage=GL_DYNAMIC_DRAW, target=GL_ARRAY_BUFFER)
     pos_vbo.bind()
     col_vbo = vbo.VBO(data=col, usage=GL_DYNAMIC_DRAW, target=GL_ARRAY_BUFFER)

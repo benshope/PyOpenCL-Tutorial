@@ -1,15 +1,12 @@
-kahasi
-======
+PyOpenCL Tutorial
 
-Kahasi PyOpenCL
+Introductory tutorial for Python parrallel computation with OpenCL and OpenGL.
 
-
-# Discover more about the OpenCL API
-
-# 02_Introspection will be the name of this document
-# 03_Shared/Global Memory
-# 04_OpenGL_OpenCL?
-# 05_Async_Memory ?
+- 01_Introduction 
+- 02_Introspection will be the name of this document
+- 03_Shared/Global Memory
+- 04_OpenGL_OpenCL?
+- 05_Async_Memory ?
 
 '''The purpose of this document will be to ask the host system everything
 about the context, buffers, devices, etc.
