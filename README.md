@@ -6,7 +6,7 @@ This tutorial is a numbered series of files.  Each file is a program with extens
 
 ## Why inline comments?
 
-IMHO comments should be avoided in real code, but comments are great for a tutorial.  Commenting every line forces the author to slow down and explain each bit of code in a way that a diligent reader can understand.  It is important to minimize the number of times a reader has to turn away and look something up.
+IMHO comments should be avoided in production code - but comments add a lot to a tutorial.  Commenting every line forces the author to slow down and explain each bit of code in a way that a diligent reader can understand.  It is important to minimize the number of times a reader has to turn away and look something up.
 
 ## Index
 
