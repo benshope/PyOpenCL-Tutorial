@@ -1,8 +1,9 @@
-from OpenGL.GL import *
-from OpenGL.GLUT import *
-from OpenGL.raw.GL.VERSION.GL_1_5 import glBufferData as rawGlBufferData
-import pyopencl as cl
+# Visualize a sine wave
 
+from OpenGL.GL import *  # OpenGL API tools
+from OpenGL.GLUT import *  # OpenGL cross-platform window
+from OpenGL.raw.GL.VERSION.GL_1_5 import glBufferData as rawGlBufferData  # ???
+import pyopencl as cl  # OpenCL API
 
 n_vertices = 10000
 
