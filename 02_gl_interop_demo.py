@@ -11,11 +11,11 @@ kernel = """
 __kernel void generate_sin(__global float2* a)
 {
     int id = get_global_id(0);  /* Where are we in this array */
-    int n = get_global_size(0);  /* How big is this entire array */
-    float r = (float)id / (float)n;  /* Location in array..0 to 1 */
-    float x = r * 16.0f * 3.1415f;  /* Sixteen Pi?  This must be a math thing */
-    a[id].x = r * 2.0f - 1.0f;
-    a[id].y = native_sin(x);
+    int global_size = get_global_size(0);  /* How big is this entire array */
+    float r = (float)id / (float)global_size;  /* r goes from 0 to 1 */
+    float x = r * 16.0f * 3.1415f;  /* Some math thing */
+    a[id].x = r * 2.0f - 1.0f; /* x coordinate of this graph point */
+    a[id].y = native_sin(x);  /* y coordinate of this graph point */
 }
 """
 

@@ -2,7 +2,7 @@
 
 An introduction to parallel computation on the GPU with Python using OpenCL and OpenGL.
 
-This tutorial is a numbered series of files.  Each file contains an entire program with extensive inline comments.
+This tutorial is a numbered series of files - each file contains an entire program with extensive inline comments.
 
 ## Why inline comments?
 
