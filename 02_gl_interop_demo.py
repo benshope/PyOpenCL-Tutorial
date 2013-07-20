@@ -57,7 +57,8 @@ def initialize():
     have to fill in several targets (State, Zip, City, Street...) in order to use 
     the special-purpose hardware that is the postal system.  If you wrote in 
     Alaska as the state, you couldn't also add Broadway as the street and 90210 
-    as the zip code.
+    as the zip code.  The letter would arrive in Alaska, but the mechanism to get it to
+    Broadway would not be available from that point.
     """
 
     rawGlBufferData(GL_ARRAY_BUFFER, num_vertices * 2 * 4, None, GL_STATIC_DRAW) # Allocate memory for the buffer
