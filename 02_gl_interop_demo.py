@@ -8,17 +8,15 @@ import pyopencl as cl  # Import the GPU computing interface
 num_vertices = 10000 # Why is this called vertices?
 
 kernel = """
-
 __kernel void generate_sin(__global float2* a)
 {
-    int id = get_global_id(0);  // Where are we in this array
-    int n = get_global_size(0);  // How big is this entire array
-    float r = (float)id / (float)n;  // Location in array..0 to 1
-    float x = r * 16.0f * 3.1415f;  // Sixteen Pi?  This must be a math thing
+    int id = get_global_id(0);  /* Where are we in this array */
+    int n = get_global_size(0);  /* How big is this entire array */
+    float r = (float)id / (float)n;  /* Location in array..0 to 1 */
+    float x = r * 16.0f * 3.1415f;  /* Sixteen Pi?  This must be a math thing */
     a[id].x = r * 2.0f - 1.0f;
     a[id].y = native_sin(x);
 }
-
 """
 
 def initialize():
