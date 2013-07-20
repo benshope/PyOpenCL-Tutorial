@@ -26,17 +26,17 @@ def initialize():
     from pyopencl.tools import get_gl_sharing_context_properties
     import sys
     if sys.platform == "darwin":
-        ctx = cl.Context(properties=get_gl_sharing_context_properties(),
+        context = cl.Context(properties=get_gl_sharing_context_properties(),
                 devices=[])
     else:
         # Some OSs prefer clCreateContextFromType, some prefer
         # clCreateContext. Try both.
         try:
-            ctx = cl.Context(properties=[
+            context = cl.Context(properties=[
                 (cl.context_properties.PLATFORM, platform)]
                 + get_gl_sharing_context_properties())
         except:
-            ctx = cl.Context(properties=[
+            context = cl.Context(properties=[
                 (cl.context_properties.PLATFORM, platform)]
                 + get_gl_sharing_context_properties(),
                 devices = [platform.get_devices()[0]])
@@ -48,9 +48,9 @@ def initialize():
     rawGlBufferData(GL_ARRAY_BUFFER, num_vertices * 2 * 4, None, GL_STATIC_DRAW)
     glEnableClientState(GL_VERTEX_ARRAY)
     glVertexPointer(2, GL_FLOAT, 0, None)
-    coords_dev = cl.GLBuffer(ctx, cl.mem_flags.READ_WRITE, int(vbo))
-    prog = cl.Program(ctx, kernel).build()
-    queue = cl.CommandQueue(ctx)
+    coords_dev = cl.GLBuffer(context, cl.mem_flags.READ_WRITE, int(vbo))
+    prog = cl.Program(context, kernel).build()
+    queue = cl.CommandQueue(context)
     cl.enqueue_acquire_gl_objects(queue, [coords_dev])
     prog.generate_sin(queue, (num_vertices,), None, coords_dev)
     cl.enqueue_release_gl_objects(queue, [coords_dev])
@@ -62,8 +62,8 @@ def display():
     glDrawArrays(GL_LINE_STRIP, 0, num_vertices)
     glFlush()
 
-def reshape(w, h):
-    glViewport(0, 0, w, h)
+def reshape(width, height):
+    glViewport(0, 0, width, height)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     glMatrixMode(GL_MODELVIEW)
