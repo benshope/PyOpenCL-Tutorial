@@ -2,7 +2,7 @@
 
 from OpenGL.GL import *  # Import the GPU rendering interface
 from OpenGL.GLUT import *  # Import the OpenGL tool to make a visualization window
-from OpenGL.raw.GL.VERSION.GL_1_5 import glBufferData as rawGlBufferData  # ???
+from OpenGL.raw.GL.VERSION.GL_1_5 import glBufferData as rawGlBufferData  # Import C-style access to the buffers
 import pyopencl as cl  # Import the GPU computing interface
 
 num_vertices = 10000 # Why is this called vertices?
@@ -43,12 +43,27 @@ def initialize():
 
     glClearColor(1, 1, 1, 1)
     glColor(0, 0, 1)
-    vbo = glGenBuffers(1)
-    glBindBuffer(GL_ARRAY_BUFFER, vbo)
-    rawGlBufferData(GL_ARRAY_BUFFER, num_vertices * 2 * 4, None, GL_STATIC_DRAW)
+    vertex_buffer = glGenBuffers(1)
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer) # Link the vertex buffer to a target
+    """Different types of objects have different sets of targets in OpenGL.  
+    Each target has a specific meaning: to bind one object to one target means 
+    to use that object in whatever manner that target uses objects bound to it.
+
+    The reason targets exist is because OpenGL is accessing special-purpose hardware
+    on the GPU.  Certain hardware (containing sets of functionality) is only 
+    available to certain memory areas and certain memory structures.
+
+    To understand targets visually, think about a letter.  In order to send a letter you 
+    have to fill in several targets (State, Zip, City, Street...) in order to use 
+    the special-purpose hardware that is the postal system.  If you wrote in 
+    Alaska as the state, you couldn't also add Broadway as the street and 90210 
+    as the zip code.
+    """
+
+    rawGlBufferData(GL_ARRAY_BUFFER, num_vertices * 2 * 4, None, GL_STATIC_DRAW) # Allocate memory for the buffer
     glEnableClientState(GL_VERTEX_ARRAY)
     glVertexPointer(2, GL_FLOAT, 0, None)
-    coords_dev = cl.GLBuffer(context, cl.mem_flags.READ_WRITE, int(vbo))
+    coords_dev = cl.GLBuffer(context, cl.mem_flags.READ_WRITE, int(vertex_buffer))
     prog = cl.Program(context, kernel).build()
     queue = cl.CommandQueue(context)
     cl.enqueue_acquire_gl_objects(queue, [coords_dev])
