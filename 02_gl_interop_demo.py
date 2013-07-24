@@ -5,9 +5,9 @@ from OpenGL.GLUT import *  # Import the OpenGL tool to make a visualization wind
 from OpenGL.raw.GL.VERSION.GL_1_5 import glBufferData as rawGlBufferData  # Import C-style access to the buffers
 import pyopencl as cl  # Import the GPU computing interface
 from pyopencl.tools import get_gl_sharing_context_properties
-import sys
+import sys  # Import system tools (path, modules, maxint)
 
-num_vertices = 10000 # Why is this called vertices?
+num_vertices = 10000 # Number of data structures describing points in 2D space.
 
 kernel = """__kernel void generate_sin(__global float2* a)
 {
