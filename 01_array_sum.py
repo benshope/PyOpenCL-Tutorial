@@ -1,36 +1,28 @@
-# A simple PyOpenCL program that sums two arrays
-
-import pyopencl as cl # Access to the OpenCL API
-import numpy # Tools to create and manipulate numbers
+import pyopencl as cl
+import pyopencl.array as cl_array
+import numpy
+import numpy.linalg as la
 
 a = numpy.random.rand(50000).astype(numpy.float32)
-b = numpy.random.rand(50000).astype(numpy.float32)  # Create two large random arrays
+b = numpy.random.rand(50000).astype(numpy.float32)
 
-context = cl.create_some_context()  # Create a Context (one per computer)
-queue = cl.CommandQueue(context)  # Create a Command Queue (usually one per processor)
+ctx = cl.create_some_context()
+queue = cl.CommandQueue(ctx)
 
-flags = cl.mem_flags # Make a shortcut to get to cl.mem_flags
+mf = cl.mem_flags
+a_dev = cl_array.to_device(queue, a)
+b_dev = cl_array.to_device(queue, b)
+dest_dev = cl_array.empty_like(a_dev)
 
-kernel = """__kernel void sum(__global float* a, __global float* b, __global float* c)
-{
-    int i = get_global_id(0);
-    c[i] = a[i] + b[i];
-}"""  # The C-like code that will run on the GPU
+prg = cl.Program(ctx, """
+    __kernel void sum(__global const float *a,
+    __global const float *b, __global float *c)
+    {
+      int gid = get_global_id(0);
+      c[gid] = a[gid] + b[gid];
+    }
+    """).build()
 
-a_buffer = cl.Buffer(context, flags.READ_ONLY | flags.COPY_HOST_PTR, hostbuf=a)
-b_buffer = cl.Buffer(context, flags.READ_ONLY | flags.COPY_HOST_PTR, hostbuf=b)
-c_buffer = cl.Buffer(context, flags.WRITE_ONLY, b.nbytes)  # Allocate memory ???
+prg.sum(queue, a.shape, None, a_dev.data, b_dev.data, dest_dev.data)
 
-program = cl.Program(context, kernel).build() # Compile the kernel into a Program
-
-program.sum(queue, a.shape, a_buffer, b_buffer, c_buffer)
-# queue - the command queue this program will be sent to
-# a.shape - a tuple of the array's dimensions
-# a.buffer, b.buffer, c.buffer - the memory spaces this program deals with
-
-c = numpy.empty_like(a) # Create an empty array the size of a
-cl.enqueue_read_buffer(queue, c_buffer, c).wait()  # Copy the device data back to c
-
-print "a", a
-print "b", b
-print "c", c  # Print everything, to show it worked
+print(la.norm((dest_dev - (a_dev+b_dev)).get()))
