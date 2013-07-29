@@ -1,4 +1,4 @@
-# A simple PyOpenCL program that sums two arrays
+# Use OpenCL To Add Two Large Random Arrays
 
 import pyopencl as cl # Import access to the OpenCL GPU computing API
 import numpy # Import numpy tools to create and manipulate numbers
