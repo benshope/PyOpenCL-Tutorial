@@ -3,8 +3,6 @@ import pyopencl as cl
 import pyopencl.characterize.performance as perf
 
 
-
-
 def main():
     ctx = cl.create_some_context()
 
@@ -30,8 +28,6 @@ def main():
             bs = 1<<i
             print "bandwidth @ %d bytes: %g GB/s" % (
                     bs, perf.transfer_bandwidth(queue, tx_type, bs)/1e9)
-
-
 
 
 if __name__ == "__main__":

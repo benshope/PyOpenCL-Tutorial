@@ -20,7 +20,6 @@ for i in range(1000):
 time2 = time()
 print("Execution time of test without OpenCL: ", time2 - time1, "s")
 
-
 for platform in cl.get_platforms():
     for device in platform.get_devices():
         print("===============================================================")

@@ -31,6 +31,6 @@ program.sum(queue, a.shape, a_buffer, b_buffer, c_buffer)
 c = numpy.empty_like(a) # Create an empty array the size of a
 cl.enqueue_read_buffer(queue, c_buffer, c).wait()  # Copy the device data back to c
 
-print "a", a
-print "b", b
-print "c", c  # Print everything, to show it worked
+print "a: ", a
+print "b: ", b
+print "c: ", c  # Print everything, to show it worked

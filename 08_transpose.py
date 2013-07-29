@@ -6,13 +6,7 @@ import pyopencl as cl
 import numpy
 import numpy.linalg as la
 
-
-
-
 block_size = 16
-
-
-
 
 class NaiveTranspose:
     def __init__(self, ctx):
@@ -36,8 +30,6 @@ class NaiveTranspose:
 
         return self.kernel(queue, (w, h), (block_size, block_size),
             tgt, src, numpy.uint32(w), numpy.uint32(h))
-
-
 
 
 class SillyTranspose(NaiveTranspose):
