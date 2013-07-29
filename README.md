@@ -1,6 +1,6 @@
 # PyOpenCL Inline Comments Tutorial
 
-An introduction to parallel computation on the GPU with Python - OpenCL and OpenGL.
+An introduction to parallel computation on the GPU with Python, both OpenCL and OpenGL.
 
 This tutorial is a numbered series of files - each file contains an entire program with extensive inline comments.
 
@@ -12,7 +12,7 @@ I have tried to write the code and the comments in a way that they could be sepa
 
 ## Why are some lines super-long?
 
-I disagree with PEP8 on this point.  In my humble opinion, it is better to turn on code-wrap in your editor than it is to add line breaks.
+I disagree with PEP 8 on this one point: it is better to turn on code-wrap in your editor than it is to add random line breaks.
 
 ## Index
 
