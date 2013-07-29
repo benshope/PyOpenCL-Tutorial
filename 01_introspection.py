@@ -1,4 +1,4 @@
-# Learn out about your system
+# Learn about your system
 
 import pyopencl as cl
 
@@ -13,7 +13,8 @@ for platform in cl.get_platforms():
         print('    ' + '-' * 56)
         print('    Device Name:  ' + device.name)
         print('    Device Type:  ' + cl.device_type.to_string(device.type))
-        print('    Device Memory: {0} GB'.format(device.global_mem_size/1073741824.0))
+        print('    Device Global Memory: {0} GB'.format(device.global_mem_size/1073741824.0))
+        print('    Device Local Memory:  {0} Bytes'.format(device.local_mem_size))
         print('    Device Max Clock Speed:  {0} Mhz'.format(device.max_clock_frequency))
         print('    Device Compute Units:  {0}'.format(device.max_compute_units))
 print('\n')
