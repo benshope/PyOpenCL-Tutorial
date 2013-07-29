@@ -1,6 +1,6 @@
 # PyOpenCL Inline Comments Tutorial
 
-An introduction to parallel computation on the GPU with Python (OpenCL and OpenGL).
+An introduction to parallel computation on the GPU with Python - OpenCL and OpenGL.
 
 This tutorial is a numbered series of files - each file contains an entire program with extensive inline comments.
 
