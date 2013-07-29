@@ -12,7 +12,7 @@ I have tried to write the code and the comments in a way that they could be sepa
 
 This tutorial does not follow PEP 8's recommendation of 79 characters per-line because there are long comments mixed in with the code.  It is best to turn on code-wrap in your editor while you are reading.
 
-## Index
+# Index
 
 - 01 Introspection - Find out about your computer's OpenCL situation
 - 02 Array Sum - Use OpenCL To Add Two Large Random Arrays
