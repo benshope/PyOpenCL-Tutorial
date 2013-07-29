@@ -10,9 +10,9 @@ I have tried to write the code and the comments in a way that they could be sepa
 
 ## Why are some lines super-long?
 
-This tutorial does not follow PEP 8's recommendation of 79 characters per-line because there are long comments mixed in with the code.  It is best to turn on code-wrap in your editor, while reading this tutorial.
+This tutorial does not follow PEP 8's recommendation of 79 characters per-line because there are long comments mixed in with the code.  It is best to turn on code-wrap in your editor while reading this tutorial.
 
 ## Index
 
 - 01 Introspection - Find out about your computer's OpenCL situation
-- 02 Topic?
+- 02 Array Sum - Use OpenCL To Add Two Large Random Arrays
