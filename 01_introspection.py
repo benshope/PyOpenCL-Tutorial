@@ -3,13 +3,13 @@
 import pyopencl as cl  # Import the OpenCL GPU computing interface
 
 print('\n' + '=' * 60 + '\nOpenCL Platforms and Devices')
-for platform in cl.get_platforms():  # Print each platform on this computer
+for platform in cl.get_platforms():  # Print info about each platform on this computer
     print('=' * 60)
     print('Platform - Name:  ' + platform.name)
     print('Platform - Vendor:  ' + platform.vendor)
     print('Platform - Version:  ' + platform.version)
     print('Platform - Profile:  ' + platform.profile)
-    for device in platform.get_devices():  # Print each device per-platform
+    for device in platform.get_devices():  # Print info about each device per-platform
         print('    ' + '-' * 56)
         print('    Device - Name:  ' + device.name)
         print('    Device - Type:  ' + cl.device_type.to_string(device.type))
