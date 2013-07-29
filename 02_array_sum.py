@@ -1,34 +1,35 @@
-import pyopencl as cl
-import pyopencl.array as cl_array
-import numpy
+# A simple PyOpenCL program that sums two arrays
+
+import pyopencl as cl # Access to the OpenCL API
+import numpy # Tools to create and manipulate numbers
+
+context = cl.create_some_context()  # Create a Context (one per computer)
+queue = cl.CommandQueue(context)  # Create a Command Queue (usually one per processor)
 
 a = numpy.random.rand(50000).astype(numpy.float32)
-b = numpy.random.rand(50000).astype(numpy.float32)
+b = numpy.random.rand(50000).astype(numpy.float32)  # Create two large random numpy arrays
 
-context = cl.create_some_context()
-queue = cl.CommandQueue(context)
+a_buffer = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=a)
+b_buffer = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=b)
+c_buffer = cl.Buffer(context, cl.mem_flags.WRITE_ONLY, b.nbytes)  
+"""Specify three buffers (areas of memory) on the GPU.  The data will be copied automatically to and from these areas when the program needs it."""
 
-mf = cl.mem_flags
-a_dev = cl_array.to_device(queue, a)
-b_dev = cl_array.to_device(queue, b)
-dest_dev = cl_array.empty_like(a_dev)
+kernel = """__kernel void sum(__global float* a, __global float* b, __global float* c)
+{
+    int i = get_global_id(0);
+    c[i] = a[i] + b[i];
+}"""  # The C-like code that will run on the GPU
 
-prg = cl.Program(context, """
-    __kernel void sum(__global const float *a, __global const float *b, __global float *c)
-    {
-      int i = get_global_id(0);
-      c[i] = a[i] + b[i];
-    }""").build()
+program = cl.Program(context, kernel).build() # Compile the kernel into a Program
 
-prg.sum(queue, a.shape, None, a_dev.data, b_dev.data, dest_dev.data)
+program.sum(queue, a.shape, a_buffer, b_buffer, c_buffer)
+# queue - the command queue this program will be sent to
+# a.shape - a tuple of the array's dimensions
+# a.buffer, b.buffer, c.buffer - the memory spaces this program deals with
 
-print(numpy.linalg.norm((dest_dev - (a_dev+b_dev)).get()))
+c = numpy.empty_like(a) # Create an empty array the size of a
+cl.enqueue_read_buffer(queue, c_buffer, c).wait()  # Copy the device data back to c
 
-
-"""Buffers are CL's version of malloc, while pyopencl.array.Array is a workalike of numpy arrays on the compute device.
-
-So for the second version of the first part of your question, you may write a_gpu + 2 to get a new arrays that has 2 added to each number in your array, whereas in the case of the Buffer, PyOpenCL only sees a bag of bytes and cannot perform any such operation.
-
-The second part of your question is the same in reverse: If you've got a PyOpenCL array, .get() copies the data back and converts it into a (host-based) numpy array. Since numpy arrays are one of the more convenient ways to get contiguous memory in Python, the second variant with enqueue_copy also ends up in a numpy array--but note that you could've copied this data into an array of any size (as long as it's big enough) and any type--the copy is performed as a bag of bytes, whereas .get() makes sure you get the same size and type on the host.
-
-Bonus fact: There is of course a Buffer underlying each PyOpenCL array. You can get it from the .data attribute."""
+print "a: ", a
+print "b: ", b
+print "c: ", c  # Print all three arrays, to show it worked
