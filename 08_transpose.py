@@ -1,6 +1,3 @@
-# Transposition of a matrix
-# originally for PyCUDA by Hendrik Riedmann <riedmann@dam.brown.edu>
-
 from __future__ import division
 import pyopencl as cl
 import numpy
@@ -40,8 +37,6 @@ class SillyTranspose(NaiveTranspose):
 
         return self.kernel(queue, (w, h), None,
             tgt, src, numpy.uint32(w), numpy.uint32(h))
-
-
 
 
 class TransposeWithLocal:
