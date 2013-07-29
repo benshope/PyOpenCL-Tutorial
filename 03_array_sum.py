@@ -18,9 +18,9 @@ __kernel void sum(__global const float *a, __global const float *b, __global flo
 
 program.sum(queue, a.shape, None, a.data, b.data, c.data)
 
-print "a: ", a
-print "b: ", b
-print "c: ", c  # Print everything, to show it worked
+print("a: {0}".format(a))
+print("b: {0}".format(b))
+print("c: {0}".format(c))  # Print all three arrays, to show sum() worked
 
 """Buffers are CL's version of malloc, while pyopencl.array.Array is a workalike of numpy arrays on the compute device.
 
