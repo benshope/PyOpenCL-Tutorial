@@ -1,4 +1,4 @@
-# Find out about your computer
+# Find out about your computer's OpenCL situation
 
 import pyopencl as cl  # Import the OpenCL GPU computing interface
 
