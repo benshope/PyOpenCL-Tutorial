@@ -10,7 +10,7 @@ I have tried to write the code and the comments in a way that they could be sepa
 
 ## Why are some lines super-long?
 
-Use code-wrap in your editor.  I know PEP 8 says to limit lines to 79 characters, but I consider this recommendation dated.
+Just turn on code-wrap in your editor.  This tutorial does not follow PEP 8 to the letter - PEP 8 recommends limiting lines to 79 characters.
 
 ## Index
 
