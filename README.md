@@ -1,6 +1,6 @@
 # PyOpenCL Inline Comments Tutorial
 
-An introduction to parallel computation with Python and OpenCL.  This tutorial is a numbered series of files.  Each file contains an entire program with extensive inline comments.
+This is an introduction to parallel computation with Python and OpenCL.  The tutorial is composed of a numbered series of files.  Each file contains an entire program with extensive inline comments.
 
 ## Why inline comments?
 
@@ -10,7 +10,7 @@ I have tried to write the code and the comments in a way that they could be sepa
 
 ## Why are some lines super-long?
 
-Just turn on code-wrap in your editor.  This tutorial does not follow PEP 8's recommendation of 79 characters per-line, because there are long comments mixed in with the code.
+This tutorial does not follow PEP 8's recommendation of 79 characters per-line because there are long comments mixed in with the code.  It is best to turn on code-wrap in your editor, while reading this tutorial.
 
 ## Index
 
