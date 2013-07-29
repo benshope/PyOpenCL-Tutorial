@@ -12,7 +12,7 @@ This tutorial does not follow PEP 8's recommendation of 79 characters per-line b
 
 ## About The Tutorial
 
-I am writing this tutorial because PyOpenCL is an awe-inspiring creative combination.  Python allows total clarity-of-expression while OpenCL provides access to all the power modern hardware can deliver.  Together these two languages are a double-bladed lightsaber in a world of butter knives.
+I am writing this tutorial because PyOpenCL is an awe-inspiring combination of tools.  Python allows total clarity-of-expression while OpenCL provides access to all the power modern hardware can deliver.  Together these two languages are a double-bladed lightsaber in a world of butter knives.
 
 # Index
 
