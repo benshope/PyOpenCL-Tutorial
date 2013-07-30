@@ -1,4 +1,4 @@
-# example provided by Roger Pau Monn'e
+# Use the Time module to test the speed of your program
 
 import pyopencl as cl
 import numpy
@@ -20,31 +20,17 @@ for i in range(1000):
 time2 = time()
 print("Execution time of test without OpenCL: ", time2 - time1, "s")
 
-for platform in cl.get_platforms():
-    for device in platform.get_devices():
-        print("===============================================================")
-        print("Platform name:", platform.name)
-        print("Platform profile:", platform.profile)
-        print("Platform vendor:", platform.vendor)
-        print("Platform version:", platform.version)
-        print("---------------------------------------------------------------")
-        print("Device name:", device.name)
-        print("Device type:", cl.device_type.to_string(device.type))
-        print("Device memory: ", device.global_mem_size//1024//1024, 'MB')
-        print("Device max clock speed:", device.max_clock_frequency, 'MHz')
-        print("Device compute units:", device.max_compute_units)
 
-        # Simnple speed test
-        ctx = cl.Context([device])
-        queue = cl.CommandQueue(ctx, 
+        context = cl.Context([device])
+        queue = cl.CommandQueue(context, 
                 properties=cl.command_queue_properties.PROFILING_ENABLE)
 
         mf = cl.mem_flags
-        a_buf = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=a)
-        b_buf = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=b)
-        dest_buf = cl.Buffer(ctx, mf.WRITE_ONLY, b.nbytes)
+        a_buf = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=a)
+        b_buf = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=b)
+        dest_buf = cl.Buffer(context, mf.WRITE_ONLY, b.nbytes)
 
-        prg = cl.Program(ctx, """
+        prg = cl.Program(context, """
             __kernel void sum(__global const float *a,
             __global const float *b, __global float *c)
             {
