@@ -17,6 +17,10 @@ linear_combination = ElementwiseKernel(context,
         "z[i] = a*x[i] + b*y[i]",
         "linear_combination")
 
+# arguments – a string formatted as a C argument list.
+# operation – a snippet of C that carries out the desired ‘map’ operation. The current index is available as the variable i. operation may contain the statement PYOPENCL_ELWISE_CONTINUE, which will terminate processing for the current element.
+# name – the function name as which the kernel is compiled
+
 linear_combination(5, a, 6, b, c)
 
 assert numpy.linalg.norm((c - (5*a+6*b)).get()) < 1e-5
