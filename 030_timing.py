@@ -2,7 +2,6 @@
 
 import pyopencl as cl
 import numpy
-import numpy.linalg as la
 from time import time
 
 a = numpy.random.rand(1000).astype(numpy.float32)
@@ -43,4 +42,4 @@ c_gpu = numpy.empty_like(a)
 cl.enqueue_read_buffer(queue, c_buffer, c_gpu).wait()
 time_gpu_end = time()
 
-print("Complete GPU Time: {0} s\n".format(time_gpu_end - time_gpu_start))
+print("GPU Time: {0} s\n".format(time_gpu_end - time_gpu_start))
