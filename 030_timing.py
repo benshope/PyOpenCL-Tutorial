@@ -3,7 +3,6 @@
 import pyopencl as cl
 import numpy
 import numpy.linalg as la
-import datetime
 from time import time
 
 a = numpy.random.rand(1000).astype(numpy.float32)
@@ -30,19 +29,17 @@ b_buf = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, 
 dest_buf = cl.Buffer(context, cl.mem_flags.WRITE_ONLY, b.nbytes)
 
 prg = cl.Program(context, """
-    __kernel void sum(__global const float *a,
-    __global const float *b, __global float *c)
+__kernel void sum(__global const float *a, __global const float *b, __global float *c)
+{
+    int loop;
+    int i = get_global_id(0);
+    for(loop = 0; loop < 1000; loop++)
     {
-                int loop;
-                int i = get_global_id(0);
-                for(loop=0; loop<1000;loop++)
-                {
-                        c[i] = a[i] + b[i];
-                        c[i] = c[i] * (a[i] + b[i]);
-                        c[i] = c[i] * (a[i] / 2.0);
-                }
-        }
-        """).build()
+        c[i] = a[i] + b[i];
+        c[i] = c[i] * (a[i] + b[i]);
+        c[i] = c[i] * (a[i] / 2.0);
+    }
+}""").build()
 
 exec_evt = prg.sum(queue, a.shape, None, a_buf, b_buf, dest_buf)
 exec_evt.wait()
