@@ -1,7 +1,7 @@
 # Use OpenCL To Add Two Large Random Arrays (Using PyOpenCL Arrays)
 
 import pyopencl as cl  # Import the OpenCL GPU computing API
-import pyopencl.array as cl_array  # Import PyOpenCL Arrays - Numpy arrays with an OpenCL buffer object
+import pyopencl.array as cl_array  # Import PyOpenCL Arrays - Numpy arrays attached to an OpenCL buffer object
 import numpy  # Import Numpy - tools to create and manipulate numbers
 
 context = cl.create_some_context()  # Initialize the Context (one per computer)
