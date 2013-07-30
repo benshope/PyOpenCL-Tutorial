@@ -1,33 +1,25 @@
 # Use OpenCL To Add Two Large Random Arrays (Using PyOpenCL Arrays)
 
-import pyopencl as cl
-import pyopencl.array as cl_array
-import numpy
+import pyopencl as cl  # Import the OpenCL GPU computing API
+import numpy  # Import Numpy - tools to create and manipulate numbers
+import pyopencl.array as cl_array  # Import PyOpenCL Arrays - Numpy arrays linked to an OpenCL buffer object
 
-context = cl.create_some_context()
-queue = cl.CommandQueue(context)
+context = cl.create_some_context()  # Initialize the Context (one per computer)
+queue = cl.CommandQueue(context)    # Instantiate a Command Queue (one per device)
 
 a = cl_array.to_device(queue, numpy.random.rand(50000).astype(numpy.float32))
-b = cl_array.to_device(queue, numpy.random.rand(50000).astype(numpy.float32))
-c = cl_array.empty_like(a)
+b = cl_array.to_device(queue, numpy.random.rand(50000).astype(numpy.float32)) # Create two large random pyopencl arrays
+c = cl_array.empty_like(a)  # Create an empty pyopencl destination array
 
 program = cl.Program(context, """
 __kernel void sum(__global const float *a, __global const float *b, __global float *c)
 {
   int i = get_global_id(0);
   c[i] = a[i] + b[i];
-}""").build()
+}""").build()  # Create the OpenCL program
 
-program.sum(queue, a.shape, None, a.data, b.data, c.data)
+program.sum(queue, a.shape, None, a.data, b.data, c.data)  # Enqueue the program for execution and store the result in c
 
 print("a: {0}".format(a))
 print("b: {0}".format(b))
 print("c: {0}".format(c))  # Print all three arrays, to show sum() worked
-
-"""Buffers are CL's version of malloc, while pyopencl.array.Array is a workalike of numpy arrays on the compute device.
-
-So for the second version of the first part of your question, you may write a_gpu + 2 to get a new arrays that has 2 added to each number in your array, whereas in the case of the Buffer, PyOpenCL only sees a bag of bytes and cannot perform any such operation.
-
-The second part of your question is the same in reverse: If you've got a PyOpenCL array, .get() copies the data back and converts it into a (host-based) numpy array. Since numpy arrays are one of the more convenient ways to get contiguous memory in Python, the second variant with enqueue_copy also ends up in a numpy array--but note that you could've copied this data into an array of any size (as long as it's big enough) and any type--the copy is performed as a bag of bytes, whereas .get() makes sure you get the same size and type on the host.
-
-Bonus fact: There is of course a Buffer underlying each PyOpenCL array. You can get it from the .data attribute."""

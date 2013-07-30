@@ -1,6 +1,6 @@
 # Find out about your computer's OpenCL situation
 
-import pyopencl as cl  # Import the OpenCL GPU computing interface
+import pyopencl as cl  # Import the OpenCL GPU computing API
 
 print('\n' + '=' * 60 + '\nOpenCL Platforms and Devices')
 for platform in cl.get_platforms():  # Print each platform on this computer

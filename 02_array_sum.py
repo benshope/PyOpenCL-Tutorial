@@ -1,7 +1,7 @@
 # Use OpenCL To Add Two Large Random Arrays
 
-import pyopencl as cl # Import access to the OpenCL GPU computing API
-import numpy # Import numpy tools to create and manipulate numbers
+import pyopencl as cl # Import the OpenCL GPU computing API
+import numpy # Import numpy - tools to create and manipulate numbers
 
 context = cl.create_some_context()  # Initialize the Context (one per computer)
 queue = cl.CommandQueue(context)  # Instantiate a Command Queue (one per device)
@@ -22,7 +22,7 @@ kernel = """__kernel void sum(__global float* a, __global float* b, __global flo
 
 program = cl.Program(context, kernel).build() # Compile the kernel code into an OpenCL program
 
-program.sum(queue, a.shape, a_buffer, b_buffer, c_buffer)  # Enqueue and call the OpenCL program
+program.sum(queue, a.shape, a_buffer, b_buffer, c_buffer)  # Ennqueue the program for execution
 # queue - the command queue this program will be sent to
 # a.shape - a tuple of the array's dimensions
 # a.buffer, b.buffer, c.buffer - the memory spaces this program deals with
