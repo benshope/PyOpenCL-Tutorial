@@ -37,10 +37,10 @@ __kernel void sum(__global const float *a, __global const float *b, __global flo
 event = program.sum(queue, a.shape, None, a_buffer, b_buffer, c_buffer)
 event.wait()
 elapsed = 1e-9*(event.profile.end - event.profile.start)
-print("GPU Kernel Time: {0} s\n".format(elapsed))
+print("GPU Kernel Time: {0} s".format(elapsed))
 
 c_gpu = numpy.empty_like(a)
 cl.enqueue_read_buffer(queue, c_buffer, c_gpu).wait()
 time_gpu_end = time()
 
-print("\nComplete GPU Time: {0} s".format(time_gpu_end - time_gpu_start))
+print("Complete GPU Time: {0} s\n".format(time_gpu_end - time_gpu_start))
