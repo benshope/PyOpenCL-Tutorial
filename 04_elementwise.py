@@ -1,25 +1,26 @@
 import pyopencl as cl
 import pyopencl.array as cl_array
+from pyopencl.elementwise import ElementwiseKernel
 import numpy
 
-ctx = cl.create_some_context()
-queue = cl.CommandQueue(ctx)
+context = cl.create_some_context()
+queue = cl.CommandQueue(context)
 
-n = 10
-a_gpu = cl_array.to_device(
-        queue, numpy.random.randn(n).astype(numpy.float32))
-b_gpu = cl_array.to_device(
-        queue, numpy.random.randn(n).astype(numpy.float32))
+a = cl_array.to_device(queue, numpy.random.randn(10).astype(numpy.float32))
+b = cl_array.to_device(queue, numpy.random.randn(10).astype(numpy.float32))
+c = cl_array.empty_like(a)
 
-from pyopencl.elementwise import ElementwiseKernel
-lin_comb = ElementwiseKernel(ctx,
+linear_combination = ElementwiseKernel(context,
         "float a, float *x, "
         "float b, float *y, "
         "float *z",
         "z[i] = a*x[i] + b*y[i]",
         "linear_combination")
 
-c_gpu = cl_array.empty_like(a_gpu)
-lin_comb(5, a_gpu, 6, b_gpu, c_gpu)
+linear_combination(5, a, 6, b, c)
 
-assert numpy.linalg.norm((c_gpu - (5*a_gpu+6*b_gpu)).get()) < 1e-5
+assert numpy.linalg.norm((c - (5*a+6*b)).get()) < 1e-5
+
+print("a: {0}".format(a))
+print("b: {0}".format(b))
+print("c: {0}".format(c))  # Print all three arrays, to show sum() worked
