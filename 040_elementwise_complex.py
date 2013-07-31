@@ -1,5 +1,6 @@
 import pyopencl as cl
 import pyopencl.array as cl_array
+from pyopencl.elementwise import ElementwiseKernel
 import numpy
 
 context = cl.create_some_context()
@@ -8,7 +9,6 @@ queue = cl.CommandQueue(context)
 a_gpu = cl_array.to_device(queue, ( numpy.random.randn(10) + 1j*numpy.random.randn(10)).astype(numpy.complex64))
 b_gpu = cl_array.to_device(queue,( numpy.random.randn(10) + 1j*numpy.random.randn(10)).astype(numpy.complex64))
 
-from pyopencl.elementwise import ElementwiseKernel
 complex_prod = ElementwiseKernel(context,
         "float a, "
         "float2 *x, "
