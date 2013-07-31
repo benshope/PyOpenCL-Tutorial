@@ -9,13 +9,13 @@ queue = cl.CommandQueue(context)
 a_gpu = cl_array.to_device(queue, ( numpy.random.randn(10) + 1j*numpy.random.randn(10)).astype(numpy.complex64))
 b_gpu = cl_array.to_device(queue,( numpy.random.randn(10) + 1j*numpy.random.randn(10)).astype(numpy.complex64))
 
-complex_prod = ElementwiseKernel(context,
+complex_product = ElementwiseKernel(context,
         "float a, "
         "float2 *x, "
         "float2 *y, "
         "float2 *z",
         "z[i] = a * complex_mul(x[i], y[i])",
-        "complex_prod",
+        "complex_product",
         preamble="""
         #define complex_ctr(x, y) (float2)(x, y)
         #define complex_mul(a, b) complex_ctr(mad(-(a).y, (b).y, (a).x * (b).x), mad((a).y, (b).x, (a).x * (b).y))
@@ -38,7 +38,7 @@ real_part = ElementwiseKernel(context,
         "real_part")
 
 c_gpu = cl_array.empty_like(a_gpu)
-complex_prod(5, a_gpu, b_gpu, c_gpu)
+complex_product(5, a_gpu, b_gpu, c_gpu)
 
 c_gpu_real = cl_array.empty(queue, len(a_gpu), dtype=numpy.float32)
 real_part(c_gpu, c_gpu_real)
