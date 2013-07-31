@@ -2,19 +2,14 @@ import pyopencl as cl
 import pyopencl.array as cl_array
 import numpy
 
-ctx = cl.create_some_context()
-queue = cl.CommandQueue(ctx)
+context = cl.create_some_context()
+queue = cl.CommandQueue(context)
 
-n = 10
-a_gpu = cl_array.to_device(queue,
-        ( numpy.random.randn(n) + 1j*numpy.random.randn(n)
-            ).astype(numpy.complex64))
-b_gpu = cl_array.to_device(queue,
-        ( numpy.random.randn(n) + 1j*numpy.random.randn(n)
-            ).astype(numpy.complex64))
+a_gpu = cl_array.to_device(queue, ( numpy.random.randn(10) + 1j*numpy.random.randn(10)).astype(numpy.complex64))
+b_gpu = cl_array.to_device(queue,( numpy.random.randn(10) + 1j*numpy.random.randn(10)).astype(numpy.complex64))
 
 from pyopencl.elementwise import ElementwiseKernel
-complex_prod = ElementwiseKernel(ctx,
+complex_prod = ElementwiseKernel(context,
         "float a, "
         "float2 *x, "
         "float2 *y, "
@@ -30,14 +25,14 @@ complex_prod = ElementwiseKernel(ctx,
         #define conj_transp_and_mul(a, b) complex_ctr(-(a).y * (b), (a).x * (b))
         """)
 
-complex_add = ElementwiseKernel(ctx,
+complex_add = ElementwiseKernel(context,
         "float2 *x, "
         "float2 *y, "
         "float2 *z",
         "z[i] = x[i] + y[i]",
         "complex_add")
 
-real_part = ElementwiseKernel(ctx,
+real_part = ElementwiseKernel(context,
         "float2 *x, float *z",
         "z[i] = x[i].x",
         "real_part")
@@ -49,4 +44,4 @@ c_gpu_real = cl_array.empty(queue, len(a_gpu), dtype=numpy.float32)
 real_part(c_gpu, c_gpu_real)
 print c_gpu.get().real - c_gpu_real.get()
 
-final_array = c_gpu.get()
+final_array = c_gpu.get() # XXXXXX What does get do?
