@@ -1,7 +1,6 @@
 import pyopencl as cl
 import pyopencl.array as cl_array
 import numpy
-import numpy.linalg as la
 
 ctx = cl.create_some_context()
 queue = cl.CommandQueue(ctx)
@@ -50,5 +49,4 @@ c_gpu_real = cl_array.empty(queue, len(a_gpu), dtype=numpy.float32)
 real_part(c_gpu, c_gpu_real)
 print c_gpu.get().real - c_gpu_real.get()
 
-print la.norm(c_gpu.get() - (5*a_gpu.get()*b_gpu.get()))
-assert la.norm(c_gpu.get() - (5*a_gpu.get()*b_gpu.get())) < 1e-5
+final_array = c_gpu.get()
