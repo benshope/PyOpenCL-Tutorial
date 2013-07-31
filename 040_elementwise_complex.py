@@ -44,4 +44,4 @@ c_gpu_real = cl_array.empty(queue, len(a_gpu), dtype=numpy.float32)
 real_part(c_gpu, c_gpu_real)
 print c_gpu.get().real - c_gpu_real.get()
 
-final_array = c_gpu.get() # XXXXXX What does get do?
+final_array = c_gpu.get() # XXXXXX What does get() do?
