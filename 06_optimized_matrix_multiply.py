@@ -1,11 +1,52 @@
-# example provided by Eilif Muller
+import pyopencl as cl
+from time import time
+import numpy
 
-from __future__ import division
+block_size = 16
 
-KERNEL_CODE = """
+context = cl.create_some_context()
+queue = cl.CommandQueue(context, properties=cl.command_queue_properties.PROFILING_ENABLE)
 
-// Thread block size
-#define BLOCK_SIZE %(block_size)d
+
+if False:
+    a_height = 4096
+    #a_height = 1024
+    a_width = 2048
+    #a_width = 256
+    #b_height == a_width
+    b_width = a_height
+elif False:
+    # like PyCUDA
+    a_height = 2516
+    a_width = 1472
+    b_height = a_width
+    b_width = 2144
+else:
+    # CL SDK
+    a_width = 50*block_size
+    a_height = 100*block_size
+    b_width = 50*block_size
+    b_height = a_width
+
+c_width = b_width
+c_height = a_height
+
+h_a = numpy.random.rand(a_height, a_width).astype(numpy.float32)
+h_b = numpy.random.rand(b_height, b_width).astype(numpy.float32)
+h_c = numpy.empty((c_height, c_width)).astype(numpy.float32)
+
+
+kernel_params = {"block_size": block_size,
+        "w_a":a_width, "h_a":a_height, "w_b":b_width}
+
+if "NVIDIA" in queue.device.vendor:
+    options = "-cl-mad-enable -cl-fast-relaxed-math"
+else:
+    options = ""
+
+kernel = """
+
+#define BLOCK_SIZE %(block_size)d  // Thread block size
 
 // Matrix dimensions
 // (chosen as multiples of the thread block size for simplicity)
@@ -17,7 +58,6 @@ KERNEL_CODE = """
 #define HC HA  // Matrix C height
 
 /* Matrix multiplication: C = A * B. */
-
 #define AS(j, i) As[i + j * BLOCK_SIZE]
 #define BS(j, i) Bs[i + j * BLOCK_SIZE]
 
@@ -93,66 +133,10 @@ matrixMul( __global float* C, __global float* A, __global float* B)
 }"""
 
 
-
-
-
-import pyopencl as cl
-from time import time
-import numpy
-
-block_size = 16
-
-ctx = cl.create_some_context()
-
-for dev in ctx.devices:
-    assert dev.local_mem_size > 0
-
-queue = cl.CommandQueue(ctx,
-        properties=cl.command_queue_properties.PROFILING_ENABLE)
-
-#queue = cl.CommandQueue(ctx)
-
-if False:
-    a_height = 4096
-    #a_height = 1024
-    a_width = 2048
-    #a_width = 256
-    #b_height == a_width
-    b_width = a_height
-
-elif False:
-    # like PyCUDA
-    a_height = 2516
-    a_width = 1472
-    b_height = a_width
-    b_width = 2144
-
-else:
-    # CL SDK
-    a_width = 50*block_size
-    a_height = 100*block_size
-    b_width = 50*block_size
-    b_height = a_width
-
-c_width = b_width
-c_height = a_height
-
-h_a = numpy.random.rand(a_height, a_width).astype(numpy.float32)
-h_b = numpy.random.rand(b_height, b_width).astype(numpy.float32)
-h_c = numpy.empty((c_height, c_width)).astype(numpy.float32)
-
-
-kernel_params = {"block_size": block_size,
-        "w_a":a_width, "h_a":a_height, "w_b":b_width}
-
-if "NVIDIA" in queue.device.vendor:
-    options = "-cl-mad-enable -cl-fast-relaxed-math"
-else:
-    options = ""
-prg = cl.Program(ctx, KERNEL_CODE % kernel_params,
+program = cl.Program(context, kernel % kernel_params,
         ).build(options=options)
-kernel = prg.matrixMul
-#print prg.binaries[0]
+kernel = program.matrixMul
+#print program.binaries[0]
 
 assert a_width % block_size == 0
 assert a_height % block_size == 0
@@ -163,9 +147,9 @@ mf = cl.mem_flags
 
 t1 = time()
 
-d_a_buf = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=h_a)
-d_b_buf = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=h_b)
-d_c_buf = cl.Buffer(ctx, mf.WRITE_ONLY, size=h_c.nbytes)
+d_a_buf = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=h_a)
+d_b_buf = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=h_b)
+d_c_buf = cl.Buffer(context, mf.WRITE_ONLY, size=h_c.nbytes)
 
 push_time = time()-t1
 

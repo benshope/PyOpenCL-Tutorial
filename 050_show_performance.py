@@ -20,10 +20,9 @@ for tx_type in [
     print tx_type.__name__
     print "----------------------------------------"
 
-    print "latency: %g s" % perf.transfer_latency(queue, tx_type)
+    print "latency: {0} s".format(perf.transfer_latency(queue, tx_type))
     for i in range(6, 28, 2):
-        bs = 1<<i
-        print "bandwidth @ %d bytes: %g GB/s" % (
-                bs, perf.transfer_bandwidth(queue, tx_type, bs)/1e9)
+        bs = 1<<i  # Is this the decrement operator?
+        print("bandwidth @ {0} bytes: {1} GB/s".format(bs, perf.transfer_bandwidth(queue, tx_type, bs)/1e9))
 
 

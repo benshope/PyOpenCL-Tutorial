@@ -96,10 +96,7 @@ def transpose_using_cl(ctx, queue, cpu_src, cls):
     a_t_buf.release()
 
     return result
-
-
-
-
+    
 
 def check_transpose():
     for cls in [NaiveTranspose, SillyTranspose, TransposeWithLocal]:
@@ -122,8 +119,6 @@ def check_transpose():
             err_norm = la.norm(err)
 
             assert err_norm == 0, (size, err_norm)
-
-
 
 
 def benchmark_transpose():
