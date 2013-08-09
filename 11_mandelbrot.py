@@ -1,46 +1,24 @@
-# I found this example for PyCuda here:
-# http://wiki.tiker.net/PyCuda/Examples/Mandelbrot
-#
-# I adapted it for PyOpenCL. Hopefully it is useful to someone.
-# July 2010, HolgerRapp@gmx.net
-#
-# Original readme below these lines.
-
-# Mandelbrot calculate using GPU, Serial numpy and faster numpy
-# Use to show the speed difference between CPU and GPU calculations
-# ian@ianozsvald.com March 2010
-
-# Based on vegaseat's TKinter/numpy example code from 2006
-# http://www.daniweb.com/code/snippet216851.html#
-# with minor changes to move to numpy from the obsolete Numeric
-
-import numpy as np
-import time
-
-import numpy
-import numpy.linalg as la
+# Display the mandelbrot set
 
 import pyopencl as cl
+import numpy
+from time import time
 
-# You can choose a calculation routine below (calc_fractal), uncomment
-# one of the three lines to test the three variations
-# Speed notes are listed in the same place
-
-# set width and height of window, more pixels take longer to calculate
 w = 512
 h = 512
+# Set the width and height of the window
 
 def calc_fractal_opencl(q, maxiter):
-    ctx = cl.create_some_context()
-    queue = cl.CommandQueue(ctx)
+    context = cl.create_some_context()
+    queue = cl.CommandQueue(context)
 
-    output = np.empty(q.shape, dtype=np.uint16)
+    output = numpy.empty(q.shape, dtype=numpy.uint16)
 
     mf = cl.mem_flags
-    q_opencl = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=q)
-    output_opencl = cl.Buffer(ctx, mf.WRITE_ONLY, output.nbytes)
+    q_opencl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=q)
+    output_opencl = cl.Buffer(context, mf.WRITE_ONLY, output.nbytes)
 
-    prg = cl.Program(ctx, """
+    program = cl.Program(context, """
     #pragma OPENCL EXTENSION cl_khr_byte_addressable_store : enable
     __kernel void mandelbrot(__global float2 *q,
                      __global ushort *output, ushort const maxiter)
@@ -62,22 +40,28 @@ def calc_fractal_opencl(q, maxiter):
     }
     """).build()
 
-    prg.mandelbrot(queue, output.shape, None, q_opencl,
-            output_opencl, np.uint16(maxiter))
+    program.mandelbrot(queue, output.shape, None, q_opencl,
+            output_opencl, numpy.uint16(maxiter))
 
     cl.enqueue_copy(queue, output, output_opencl).wait()
 
     return output
 
+def calc_fractal_numpy(q, maxiter):
+    output = numpy.resize(numpy.array(0,), q.shape)
+    z = numpy.zeros(q.shape, numpy.complex64)
 
+    for iter in range(maxiter):
+        z = z*z + q
+        done = numpy.greater(abs(z), 2.0)
+        q = numpy.where(done,0+0j, q)
+        z = numpy.where(done,0+0j, z)
+        output = numpy.where(done, iter, output)
+    return output
 
 def calc_fractal_serial(q, maxiter):
-    # calculate z using numpy
-    # this routine unrolls calc_fractal_numpy as an intermediate
-    # step to the creation of calc_fractal_opencl
-    # it runs slower than calc_fractal_numpy
-    z = np.zeros(q.shape, np.complex64)
-    output = np.resize(np.array(0,), q.shape)
+    z = numpy.zeros(q.shape, numpy.complex64)
+    output = numpy.resize(numpy.array(0,), q.shape)
     for i in range(len(q)):
         for iter in range(maxiter):
             z[i] = z[i]*z[i] + q[i]
@@ -87,57 +71,40 @@ def calc_fractal_serial(q, maxiter):
                 output[i] = iter
     return output
 
-def calc_fractal_numpy(q, maxiter):
-    # calculate z using numpy, this is the original
-    # routine from vegaseat's URL
-    output = np.resize(np.array(0,), q.shape)
-    z = np.zeros(q.shape, np.complex64)
-
-    for iter in range(maxiter):
-        z = z*z + q
-        done = np.greater(abs(z), 2.0)
-        q = np.where(done,0+0j, q)
-        z = np.where(done,0+0j, z)
-        output = np.where(done, iter, output)
-    return output
-
-# choose your calculation routine here by uncommenting one of the options
 calc_fractal = calc_fractal_opencl
 # calc_fractal = calc_fractal_serial
 # calc_fractal = calc_fractal_numpy
 
 if __name__ == '__main__':
-    import Tkinter as tk
+    import Tkinter as tk  # XXX What are these three imports?  Why are they here? XXX
     import Image          # PIL
     import ImageTk        # PIL
 
-
     class Mandelbrot(object):
         def __init__(self):
-            # create window
+            # Create the window
             self.root = tk.Tk()
             self.root.title("Mandelbrot Set")
             self.create_image()
             self.create_label()
-            # start event loop
+            # Start the event loop
             self.root.mainloop()
-
 
         def draw(self, x1, x2, y1, y2, maxiter=30):
             # draw the Mandelbrot set, from numpy example
-            xx = np.arange(x1, x2, (x2-x1)/w)
-            yy = np.arange(y2, y1, (y1-y2)/h) * 1j
-            q = np.ravel(xx+yy[:, np.newaxis]).astype(np.complex64)
+            xx = numpy.arange(x1, x2, (x2-x1)/w)
+            yy = numpy.arange(y2, y1, (y1-y2)/h) * 1j
+            q = numpy.ravel(xx+yy[:, numpy.newaxis]).astype(numpy.complex64)
 
-            start_main = time.time()
+            start_main = time()
             output = calc_fractal(q, maxiter)
-            end_main = time.time()
+            end_main = time()
 
             secs = end_main - start_main
             print("Main took", secs)
 
             self.mandel = (output.reshape((h,w)) /
-                    float(output.max()) * 255.).astype(np.uint8)
+                    float(output.max()) * 255.).astype(numpy.uint8)
 
         def create_image(self):
             """"

@@ -1,5 +1,16 @@
 # OpenCL + OpenGL program - visualization of particles with gravity
 
+
+# ==== WHAT HAPPENS IN THIS PROGRAM ====
+# 1. We import the environment
+# 2. We set up the environment
+# 3. We XXXX
+
+# This code is unfinished.  Finish it.
+# Find out if vertex buffers have any downsides when compared to buffers.
+# Can vertex buffers be used as normal buffers?  This quesion might be answered along the way.
+
+
 import pyopencl as cl # OpenCL - GPU computing interface
 from OpenGL.GL import *  # OpenGL - GPU rendering interface
 from OpenGL.GLU import *  # OpenGL tools (mipmaps, NURBS, perspective projection, shapes)
@@ -7,7 +18,7 @@ from OpenGL.GLUT import *  # OpenGL tool to make a visualization window
 import math # Simple number tools
 import numpy # Complicated number tools
 import sys # System tools (path, modules, maxint)
-import time # What does this do?
+import time # XXX
 
 num_particles = 20000  # Number of particles
 time_step = .001  # Time between each animation frame
@@ -42,7 +53,7 @@ glMatrixMode(GL_MODELVIEW)
 
 glutMainLoop()
 
-# ===== VERB FUNCTIONS ===== these are for holding code
+# ===== VERB FUNCTIONS ===== these have side-effects
 
 def tick(msecs):
     glutTimerFunc(msecs, tick, msecs)   # Call a function in x msecs (msecs, func(value), value)
@@ -135,9 +146,6 @@ def buffers(num_particles):  # Initialize the arrays of particle data: position,
     return (pos_vbo, col_vbo, vel)
 
 
-
-
-
 kernel = """__kernel void part2(__global float4* pos, __global float4* color, __global float4* vel, __global float4* pos_gen, __global float4* vel_gen, float dt)
 {
     //get our index in the array
@@ -189,6 +197,7 @@ flags = cl.mem_flags # Create a shortcut to OpenCL's memory instructions
 
 a = numpy.random.rand(5).astype(numpy.float32)
 b = numpy.random.rand(5).astype(numpy.float32)  # Create two large float arrays
+c = numpy.empty_like(a) # Create a correctly-sized array
 
 a_buffer = cl.Buffer(context, flags.COPY_HOST_PTR, hostbuf=a)
 b_buffer = cl.Buffer(context, flags.COPY_HOST_PTR, hostbuf=b)
@@ -199,5 +208,4 @@ program.sum(queue, a.shape, a_buffer, b_buffer, c_buffer)
 # a.shape - a tuple of the array's dimensions
 # a.buffer, b.buffer, c.buffer - the memory spaces this program deals with
 
-c = numpy.empty_like(a) # Create a correctly-sized array
 cl.enqueue_read_buffer(queue, c_buffer, c).wait()  # Execute everything and copy back
