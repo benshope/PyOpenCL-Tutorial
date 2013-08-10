@@ -8,11 +8,11 @@ This tutorial is an expiriment in code education.  The idea is that commenting e
 
 I have tried to write the code and the comments in a way that they could be separated and each one would still tell the complete story of what is going on.  With two sources of information, hopefully readers will seldom have to break focus and look something up.
 
-This tutorial does not follow PEP 8's recommendation of 79 characters per-line because there are long comments mixed in with the code.  It is best to turn on code-wrap in your editor while you are reading.
+This tutorial does not follow PEP 8's recommendation of 79 characters per-line because there are long comments mixed in with the code.  Sorry if this makes a problem.  I recommend turning on code-wrap in your editor while you are reading.
 
 ## About The Tutorial
 
-I am writing this tutorial because PyOpenCL is a combination of tools that is worth learning.  Python allows exceptional clarity-of-expression while OpenCL provides access to all the power modern hardware can deliver.  Together these two languages are like a lightsaber in a world of butter knives.
+I am writing this tutorial because PyOpenCL is a combination of tools that is worth learning.  Python allows exceptional clarity-of-expression while OpenCL provides access to all the power modern hardware can deliver.  Together these two languages are like a double-bladed lightsaber in a world of butter knives.
 
 # Index
 
