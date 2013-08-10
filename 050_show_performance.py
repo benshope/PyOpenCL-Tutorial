@@ -6,16 +6,13 @@ queue = cl.CommandQueue(context, properties=cl.command_queue_properties.PROFILIN
 
 overhead, latency = performance.get_profiling_overhead(context)
 
-# XXX Find out the difference between {} and {0} XXX
-# XXX Turn off scientific notation for second measurements?  XXX
-
-# XXX Find out what the hell all these numbers mean XXX
+# XXX Find out what all these numbers mean XXX
 print("\n\nCommand Latency: {} s".format(latency))
 print("Profiling Overhead: {} s -> {}".format(overhead, 100*overhead/latency))  
 
-# XXX Both these lines appear to break the program on a Mac, fix them XXX
-# print("Empty Kernel: {} s".format(performance.get_empty_kernel_time(queue)))
-# print("Float32 Add: {} GOps/s\n".format(performance.get_add_rate(queue)/1e9))
+# XXX Both these lines break the program on a Mac XXX
+print("Empty Kernel: {} s".format(performance.get_empty_kernel_time(queue)))
+print("Float32 Add: {} GOps/s\n".format(performance.get_add_rate(queue)/1e9))
 
 for transfer_type in [
         performance.HostToDeviceTransfer,
