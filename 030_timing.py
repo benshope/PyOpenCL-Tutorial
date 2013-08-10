@@ -1,8 +1,8 @@
 # Test the speed of your PyOpenCL program
 
 import pyopencl as cl  # Import the OpenCL GPU computing API
-import numpy  # Import tools to work with numbers
-from time import time  # Import access to the current time XXXXX IMPROVE
+import numpy  # Import number tools
+from time import time  # Import time tools
  
 a = numpy.random.rand(1000).astype(numpy.float32)  # Create a random array to add
 b = numpy.random.rand(1000).astype(numpy.float32)  # Create a random array to add
