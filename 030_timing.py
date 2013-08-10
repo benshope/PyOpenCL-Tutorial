@@ -28,7 +28,7 @@ def gpu_array_sum(a, b):
     {
         int i = get_global_id(0);
         int j;
-        for(j = 0; j < 1000; j++)  /* XXX DOES THIS STILL DO THE SAME THING AS THE CPU CODE NOW? XXX */
+        for(j = 0; j < 1000; j++)
         {
             c[i] = a[i] + b[i];
         }
