@@ -185,7 +185,7 @@ kernel = """__kernel void part2(__global float4* pos, __global float4* color, __
     //you can manipulate the color based on properties of the system
     //here we adjust the alpha
     color[i].w = life;
-}"""  # The C-like code that will run on the GPU
+}"""  # The C-like code that will run on the device
 
 
 context = cl.create_some_context()  # Create a Context (one per computer)
