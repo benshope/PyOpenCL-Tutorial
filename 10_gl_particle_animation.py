@@ -38,11 +38,12 @@ def fountain(num_particles):
     pos[:,2] = 0.
     pos[:,3] = 1.
 
-    col[:,0] = 0.
+    col[:,0] = 1.
     col[:,1] = 1.
-    col[:,2] = 0.
+    col[:,2] = 1.
     col[:,3] = 1.
-
+    print col
+    print col.size()
     vel[:,0] = pos[:,0] * 2.
     vel[:,1] = pos[:,1] * 2.
     vel[:,2] = 3.
@@ -118,6 +119,7 @@ glutInit(sys.argv)
 glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
 glutInitWindowSize(width, height)
 glutInitWindowPosition(0, 0)
+win = glutCreateWindow("Particle Simulation")
 
 glutDisplayFunc(draw)  # Called by GLUT every frame
 
@@ -134,8 +136,6 @@ glLoadIdentity()
 gluPerspective(60., width / float(height), .1, 1000.)
 glMatrixMode(GL_MODELVIEW)
 
-win = glutCreateWindow("Part 2: Python")
-
 # Set up initial conditions
 (pos_vbo, col_vbo, vel) = fountain(num_particles)
 
@@ -149,7 +149,7 @@ def execute(sub_intervals):
     kernelargs = (pos_cl, col_cl, vel_cl, pos_gen_cl, vel_gen_cl, numpy.float32(time_step))
 
     for i in xrange(0, sub_intervals):
-        program.part2(queue, global_size, local_size, *(kernelargs))
+        program.particle_fountain(queue, global_size, local_size, *(kernelargs))
 
     cl.enqueue_release_gl_objects(queue, gl_objects)
     queue.finish()
@@ -186,7 +186,7 @@ queue = cl.CommandQueue(ctx)
 
 
 kernel = """
-__kernel void part2(__global float4* pos, __global float4* color, __global float4* vel, __global float4* pos_gen, __global float4* vel_gen, float time_step)
+__kernel void particle_fountain(__global float4* pos, __global float4* color, __global float4* vel, __global float4* pos_gen, __global float4* vel_gen, float time_step)
 {
     //get our index in the array
     unsigned int i = get_global_id(0);
