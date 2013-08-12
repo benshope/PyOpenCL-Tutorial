@@ -1,6 +1,7 @@
 # OpenCL + OpenGL program - visualization of particles with gravity
 
 import pyopencl as cl # OpenCL - GPU computing interface
+mf = cl.mem_flags
 from OpenGL.GL import *  # OpenGL - GPU rendering interface
 from OpenGL.GLU import *  # OpenGL tools (mipmaps, NURBS, perspective projection, shapes)
 from OpenGL.GLUT import *  # OpenGL tool to make a visualization window
@@ -11,52 +12,6 @@ import time # XXX
 
 width = 800
 height = 600
-
-class Vec(numpy.ndarray):
-    props = ['x', 'y', 'z', 'w']
-
-    def __new__(cls, input_array):
-        # Input array is an already formed ndarray instance
-        # We first cast to be our class type
-        obj = numpy.asarray(input_array).view(cls)
-        # add the new attribute to the created instance
-        if len(obj) < 2 or len(obj) > 4:
-            #not a 2,3 or 4 element vector!
-            return None
-        return obj
-
-    def __array_finalize__(self, obj):
-        #this gets called after object creation by numpy.ndarray
-        #print "array finalize", obj
-        if obj is None: return
-        #we set x, y etc properties by iterating through ndarray
-        for i in range(len(obj)):
-            setattr(self, Vec.props[i], obj[i])
-
-    def __array_wrap__(self, out_arr, context=None):
-        #this gets called after numpy functions are called on the array
-        #out_arr is the output (resulting) array
-        for i in range(len(out_arr)):
-            setattr(out_arr, Vec.props[i], out_arr[i])
-        return numpy.ndarray.__array_wrap__(self, out_arr, context)
-
-    def __repr__(self):
-        desc="""Vec2(data=%(data)s,"""  # x=%(x)s, y=%(y)s)"""
-        for i in range(len(self)):
-            desc += " %s=%s," % (Vec.props[i], getattr(self, Vec.props[i]))
-        desc = desc[:-1]    #cut off last comma
-        return desc % {'data': str(self) }
-
-    def __setitem__(self, ind, val):
-        #print "SETITEM", self.shape, ind, val
-        if self.shape == ():    #dirty hack for dot product
-            return
-        self.__dict__[Vec.props[ind]] = val
-        return numpy.ndarray.__setitem__(self, ind, val)
-    
-    def __setattr__(self, item, val):
-        self[Vec.props.index(item)] = val
-
 
 class Part2(object):
     def __init__(self, num, dt, *args, **kwargs):
@@ -111,10 +66,7 @@ class Part2(object):
         self.dt = numpy.float32(dt)
 
 
-
     def loadData(self, pos_vbo, col_vbo, vel):
-        import pyopencl as cl
-        mf = cl.mem_flags
         self.pos_vbo = pos_vbo
         self.col_vbo = col_vbo
 
@@ -144,7 +96,6 @@ class Part2(object):
         self.gl_objects = [self.pos_cl, self.col_cl]
         
 
-
     def execute(self, sub_intervals):
         cl.enqueue_acquire_gl_objects(self.queue, self.gl_objects)
 
@@ -166,15 +117,14 @@ class Part2(object):
  
 
     def clinit(self):
-        plats = cl.get_platforms()
+        platforms = cl.get_platforms()
         from pyopencl.tools import get_gl_sharing_context_properties
-        import sys 
         if sys.platform == "darwin":
             self.ctx = cl.Context(properties=get_gl_sharing_context_properties(),
                              devices=[])
         else:
             self.ctx = cl.Context(properties=[
-                (cl.context_properties.PLATFORM, plats[0])]
+                (cl.context_properties.PLATFORM, platforms[0])]
                 + get_gl_sharing_context_properties(), devices=None)
                 
         self.queue = cl.CommandQueue(self.ctx)
@@ -203,10 +153,6 @@ class Part2(object):
         glDisableClientState(GL_VERTEX_ARRAY)
 
         glDisable(GL_BLEND)
-     
-
-
-
 
 
 def fountain_np(num):
@@ -234,7 +180,6 @@ def fountain_np(num):
     vel[:,3] = numpy.random.random_sample((num, ))
 
     return pos, col, vel
-    
 
 
 def fountain(num):
@@ -252,7 +197,6 @@ def fountain(num):
     col_vbo.bind()
 
     return (pos_vbo, col_vbo, vel)
-
     
 
 #number of particles
@@ -264,10 +208,10 @@ class window(object):
     def __init__(self, *args, **kwargs):
         #mouse handling for transforming scene
         self.mouse_down = False
-        self.mouse_old = Vec([0., 0.])
-        self.rotate = Vec([0., 0., 0.])
-        self.translate = Vec([0., 0., 0.])
-        self.initrans = Vec([0., 0., -2.])
+        self.mouse_old = {'x': 0., 'y': 0.}
+        self.rotate = {'x': 0., 'y': 0., 'z': 0.}
+        self.translate = {'x': 0., 'y': 0., 'z': 0.}
+        self.initrans = {'x': 0., 'y': 0., 'z': -2.}
 
         glutInit(sys.argv)
         glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
@@ -320,21 +264,20 @@ class window(object):
             self.button = button
         else:
             self.mouse_down = False
-        self.mouse_old.x = x
-        self.mouse_old.y = y
+        self.mouse_old['x'] = x
+        self.mouse_old['y'] = y
 
     
     def on_mouse_motion(self, x, y):
-        dx = x - self.mouse_old.x
-        dy = y - self.mouse_old.y
+        dx = x - self.mouse_old['x']
+        dy = y - self.mouse_old['y']
         if self.mouse_down and self.button == 0: #left button
-            self.rotate.x += dy * .2
-            self.rotate.y += dx * .2
+            self.rotate['x'] += dy * .2
+            self.rotate['y'] += dx * .2
         elif self.mouse_down and self.button == 2: #right button
-            self.translate.z -= dy * .01 
-        self.mouse_old.x = x
-        self.mouse_old.y = y
-    ###END GL CALLBACKS
+            self.translate['z'] -= dy * .01 
+        self.mouse_old['x'] = x
+        self.mouse_old['y'] = y
 
 
     def draw(self):
@@ -348,14 +291,13 @@ class window(object):
         glLoadIdentity()
 
         #handle mouse transformations
-        glTranslatef(self.initrans.x, self.initrans.y, self.initrans.z)
-        glRotatef(self.rotate.x, 1, 0, 0)
-        glRotatef(self.rotate.y, 0, 1, 0) #we switched around the axis so make this rotate_z
-        glTranslatef(self.translate.x, self.translate.y, self.translate.z)
+        glTranslatef(self.initrans['x'], self.initrans['y'], self.initrans['z'])
+        glRotatef(self.rotate['x'], 1, 0, 0)
+        glRotatef(self.rotate['y'], 0, 1, 0) #we switched around the axis so make this rotate_z
+        glTranslatef(self.translate['x'], self.translate['y'], self.translate['z'])
         
         #render the particles
         self.cle.render()
-
 
         glutSwapBuffers()
 
@@ -363,5 +305,3 @@ class window(object):
 
 if __name__ == "__main__":
     p2 = window()
-
-
