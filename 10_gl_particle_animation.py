@@ -22,13 +22,13 @@ import time # XXX
 
 
 
-class Vec(np.ndarray):
+class Vec(numpy.ndarray):
     props = ['x', 'y', 'z', 'w']
 
     def __new__(cls, input_array):
         # Input array is an already formed ndarray instance
         # We first cast to be our class type
-        obj = np.asarray(input_array).view(cls)
+        obj = numpy.asarray(input_array).view(cls)
         # add the new attribute to the created instance
         if len(obj) < 2 or len(obj) > 4:
             #not a 2,3 or 4 element vector!
@@ -48,7 +48,7 @@ class Vec(np.ndarray):
         #out_arr is the output (resulting) array
         for i in range(len(out_arr)):
             setattr(out_arr, Vec.props[i], out_arr[i])
-        return np.ndarray.__array_wrap__(self, out_arr, context)
+        return numpy.ndarray.__array_wrap__(self, out_arr, context)
 
     def __repr__(self):
         desc="""Vec2(data=%(data)s,"""  # x=%(x)s, y=%(y)s)"""
@@ -63,46 +63,10 @@ class Vec(np.ndarray):
         if self.shape == ():    #dirty hack for dot product
             return
         self.__dict__[Vec.props[ind]] = val
-        return np.ndarray.__setitem__(self, ind, val)
+        return numpy.ndarray.__setitem__(self, ind, val)
     
     def __setattr__(self, item, val):
         self[Vec.props.index(item)] = val
-
-
-
-
-num_particles = 20000  # Number of particles
-time_step = .001  # Time between each animation frame
-window_width = 640  # Viewing window width
-window_height = 480  # Viewing window height
-mouse_down = False
-mouse_old = Vec([0., 0.])
-rotate = Vec([0., 0., 0.])
-translate = Vec([0., 0., 0.])
-initrans = Vec([0., 0., -2.])
-
-# Functions that are called on window events
-glutDisplayFunc(draw)
-glutKeyboardFunc(key)
-glutMouseFunc(click)
-glutMotionFunc(mouse_move)
-glutTimerFunc(30, tick, 30)  # Call a function in x msecs (msecs, func(value), value)
-
-glutInit(sys.argv)
-glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
-glutInitWindowSize(window_width, window_height)
-glutInitWindowPosition(0, 0)
-window = glutCreateWindow("Python Particles Simulation")
-
-glViewport(0, 0, window_width, window_height)
-glMatrixMode(GL_PROJECTION)
-glLoadIdentity()
-gluPerspective(60., window_width / float(window_height), .1, 1000.)
-glMatrixMode(GL_MODELVIEW)
-
-(pos_vbo, col_vbo, vel) = fountain(num_particles)  # Set up OpenGL scene
-
-glutMainLoop()
 
 # ===== VERB FUNCTIONS ===== these have side-effects
 
@@ -230,6 +194,53 @@ def buffers(num_particles):  # Initialize the arrays of particle data: position,
     col_vbo.bind()
 
     return (pos_vbo, col_vbo, vel)
+
+
+
+
+
+
+
+
+num_particles = 20000  # Number of particles
+time_step = .001  # Time between each animation frame
+window_width = 640  # Viewing window width
+window_height = 480  # Viewing window height
+mouse_down = False
+mouse_old = Vec([0., 0.])
+rotate = Vec([0., 0., 0.])
+translate = Vec([0., 0., 0.])
+initrans = Vec([0., 0., -2.])
+
+# Functions that are called on window events
+glutDisplayFunc(draw)
+glutKeyboardFunc(key)
+glutMouseFunc(click)
+glutMotionFunc(mouse_move)
+glutTimerFunc(30, tick, 30)  # Call a function in x msecs (msecs, func(value), value)
+
+glutInit(sys.argv)
+glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
+glutInitWindowSize(window_width, window_height)
+glutInitWindowPosition(0, 0)
+window = glutCreateWindow("Python Particles Simulation")
+
+glViewport(0, 0, window_width, window_height)
+glMatrixMode(GL_PROJECTION)
+glLoadIdentity()
+gluPerspective(60., window_width / float(window_height), .1, 1000.)
+glMatrixMode(GL_MODELVIEW)
+
+(pos_vbo, col_vbo, vel) = fountain(num_particles)  # Set up OpenGL scene
+
+glutMainLoop()
+
+
+
+
+
+
+
 
 
 kernel = """__kernel void part2(__global float4* pos, __global float4* color, __global float4* vel, __global float4* pos_gen, __global float4* vel_gen, float dt)
