@@ -102,7 +102,7 @@ glutInit(sys.argv)
 glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
 glutInitWindowSize(width, height)
 glutInitWindowPosition(0, 0)
-win = glutCreateWindow("Particle Simulation")
+window = glutCreateWindow("Particle Simulation")
 
 glutDisplayFunc(draw)  # Called by GLUT every frame
 glutKeyboardFunc(on_key)
@@ -158,13 +158,11 @@ def render():
 
     glDisable(GL_BLEND)
 
-
 platforms = cl.get_platforms()
 context = cl.Context(properties=[
     (cl.context_properties.PLATFORM, platforms[0])]
     + get_gl_sharing_context_properties(), devices=None)  
 queue = cl.CommandQueue(context)
-
 
 kernel = """
 __kernel void particle_fountain(__global float4* pos, __global float4* color, __global float4* vel, __global float4* pos_gen, __global float4* vel_gen, float time_step)
@@ -210,7 +208,6 @@ __kernel void particle_fountain(__global float4* pos, __global float4* color, __
 }"""
 
 program = cl.Program(context, kernel).build()
-
 
 #Setup vertex buffer objects and share them with OpenCL as GLBuffers
 pos_vbo.bind()
