@@ -118,7 +118,6 @@ glutInit(sys.argv)
 glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
 glutInitWindowSize(width, height)
 glutInitWindowPosition(0, 0)
-win = glutCreateWindow("Part 2: Python")
 
 glutDisplayFunc(draw)  # Called by GLUT every frame
 
@@ -134,6 +133,8 @@ glMatrixMode(GL_PROJECTION)
 glLoadIdentity()
 gluPerspective(60., width / float(height), .1, 1000.)
 glMatrixMode(GL_MODELVIEW)
+
+win = glutCreateWindow("Part 2: Python")
 
 # Set up initial conditions
 (pos_vbo, col_vbo, vel) = fountain(num_particles)
