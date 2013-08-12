@@ -15,7 +15,7 @@ height = 600
 
 class Part2(object):
     def __init__(self, num, dt, *args, **kwargs):
-        self.clinit()
+        clinit()
         
         kernel = """
         __kernel void part2(__global float4* pos, __global float4* color, __global float4* vel, __global float4* pos_gen, __global float4* vel_gen, float dt)
@@ -60,74 +60,71 @@ class Part2(object):
 
         }"""
 
-        self.program = cl.Program(self.ctx, kernel).build()
+        program = cl.Program(ctx, kernel).build()
 
-        self.num = num
-        self.dt = numpy.float32(dt)
+        num = num
+        dt = numpy.float32(dt)
 
 
     def loadData(self, pos_vbo, col_vbo, vel):
-        self.pos_vbo = pos_vbo
-        self.col_vbo = col_vbo
+        pos_vbo = pos_vbo
+        col_vbo = col_vbo
 
-        self.pos = pos_vbo.data
-        self.col = col_vbo.data
-        self.vel = vel
+        pos = pos_vbo.data
+        col = col_vbo.data
+        vel = vel
 
         #Setup vertex buffer objects and share them with OpenCL as GLBuffers
-        self.pos_vbo.bind()
+        pos_vbo.bind()
         #For some there is no single buffer but an array of buffers
-        #https://github.com/enjalot/adventures_in_opencl/commit/61bfd373478767249fe8a3aa77e7e36b22d453c4
         try:
-            self.pos_cl = cl.GLBuffer(self.ctx, mf.READ_WRITE, int(self.pos_vbo.buffer))
-            self.col_cl = cl.GLBuffer(self.ctx, mf.READ_WRITE, int(self.col_vbo.buffer))
+            pos_cl = cl.GLBuffer(ctx, mf.READ_WRITE, int(pos_vbo.buffer))
+            col_cl = cl.GLBuffer(ctx, mf.READ_WRITE, int(col_vbo.buffer))
         except AttributeError:
-            self.pos_cl = cl.GLBuffer(self.ctx, mf.READ_WRITE, int(self.pos_vbo.buffers[0]))
-            self.col_cl = cl.GLBuffer(self.ctx, mf.READ_WRITE, int(self.col_vbo.buffers[0]))
-        self.col_vbo.bind()
+            pos_cl = cl.GLBuffer(ctx, mf.READ_WRITE, int(pos_vbo.buffers[0]))
+            col_cl = cl.GLBuffer(ctx, mf.READ_WRITE, int(col_vbo.buffers[0]))
+        col_vbo.bind()
 
         #pure OpenCL arrays
-        self.vel_cl = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=vel)
-        self.pos_gen_cl = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=self.pos)
-        self.vel_gen_cl = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=self.vel)
-        self.queue.finish()
+        vel_cl = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=vel)
+        pos_gen_cl = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=pos)
+        vel_gen_cl = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=vel)
+        queue.finish()
 
         # set up the list of GL objects to share with opencl
-        self.gl_objects = [self.pos_cl, self.col_cl]
+        gl_objects = [pos_cl, col_cl]
         
-
     def execute(self, sub_intervals):
-        cl.enqueue_acquire_gl_objects(self.queue, self.gl_objects)
+        cl.enqueue_acquire_gl_objects(queue, gl_objects)
 
-        global_size = (self.num,)
+        global_size = (num,)
         local_size = None
 
-        kernelargs = (self.pos_cl, 
-                      self.col_cl, 
-                      self.vel_cl, 
-                      self.pos_gen_cl, 
-                      self.vel_gen_cl, 
-                      self.dt)
+        kernelargs = (pos_cl, 
+                      col_cl, 
+                      vel_cl, 
+                      pos_gen_cl, 
+                      vel_gen_cl, 
+                      dt)
 
         for i in xrange(0, sub_intervals):
-            self.program.part2(self.queue, global_size, local_size, *(kernelargs))
+            program.part2(queue, global_size, local_size, *(kernelargs))
 
-        cl.enqueue_release_gl_objects(self.queue, self.gl_objects)
-        self.queue.finish()
+        cl.enqueue_release_gl_objects(queue, gl_objects)
+        queue.finish()
  
-
     def clinit(self):
         platforms = cl.get_platforms()
         from pyopencl.tools import get_gl_sharing_context_properties
         if sys.platform == "darwin":
-            self.ctx = cl.Context(properties=get_gl_sharing_context_properties(),
+            ctx = cl.Context(properties=get_gl_sharing_context_properties(),
                              devices=[])
         else:
-            self.ctx = cl.Context(properties=[
+            ctx = cl.Context(properties=[
                 (cl.context_properties.PLATFORM, platforms[0])]
                 + get_gl_sharing_context_properties(), devices=None)
                 
-        self.queue = cl.CommandQueue(self.ctx)
+        queue = cl.CommandQueue(ctx)
 
 
     def render(self):
@@ -138,16 +135,16 @@ class Part2(object):
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
         #setup the VBOs
-        self.col_vbo.bind()
-        glColorPointer(4, GL_FLOAT, 0, self.col_vbo)
+        col_vbo.bind()
+        glColorPointer(4, GL_FLOAT, 0, col_vbo)
 
-        self.pos_vbo.bind()
-        glVertexPointer(4, GL_FLOAT, 0, self.pos_vbo)
+        pos_vbo.bind()
+        glVertexPointer(4, GL_FLOAT, 0, pos_vbo)
 
         glEnableClientState(GL_VERTEX_ARRAY)
         glEnableClientState(GL_COLOR_ARRAY)
         #draw the VBOs
-        glDrawArrays(GL_POINTS, 0, self.num)
+        glDrawArrays(GL_POINTS, 0, num)
 
         glDisableClientState(GL_COLOR_ARRAY)
         glDisableClientState(GL_VERTEX_ARRAY)
@@ -207,37 +204,37 @@ dt = .001
 class window(object):
     def __init__(self, *args, **kwargs):
         #mouse handling for transforming scene
-        self.mouse_down = False
-        self.mouse_old = {'x': 0., 'y': 0.}
-        self.rotate = {'x': 0., 'y': 0., 'z': 0.}
-        self.translate = {'x': 0., 'y': 0., 'z': 0.}
-        self.initrans = {'x': 0., 'y': 0., 'z': -2.}
+        mouse_down = False
+        mouse_old = {'x': 0., 'y': 0.}
+        rotate = {'x': 0., 'y': 0., 'z': 0.}
+        translate = {'x': 0., 'y': 0., 'z': 0.}
+        initrans = {'x': 0., 'y': 0., 'z': -2.}
 
         glutInit(sys.argv)
         glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
         glutInitWindowSize(width, height)
         glutInitWindowPosition(0, 0)
-        self.win = glutCreateWindow("Part 2: Python")
+        win = glutCreateWindow("Part 2: Python")
 
         #gets called by GLUT every frame
-        glutDisplayFunc(self.draw)
+        glutDisplayFunc(draw)
 
         #handle user input
-        glutKeyboardFunc(self.on_key)
-        glutMouseFunc(self.on_click)
-        glutMotionFunc(self.on_mouse_motion)
+        glutKeyboardFunc(on_key)
+        glutMouseFunc(on_click)
+        glutMotionFunc(on_mouse_motion)
         
         #this will call draw every 30 ms
-        glutTimerFunc(30, self.timer, 30)
+        glutTimerFunc(30, timer, 30)
 
         #setup OpenGL scene
-        self.glinit()
+        glinit()
 
         #set up initial conditions
         (pos_vbo, col_vbo, vel) = fountain(num)
         #create our OpenCL instance
-        self.cle = Part2(num, dt)
-        self.cle.loadData(pos_vbo, col_vbo, vel)
+        cle = Part2(num, dt)
+        cle.loadData(pos_vbo, col_vbo, vel)
 
         glutMainLoop()
         
@@ -250,7 +247,7 @@ class window(object):
 
     # GL Callbacks
     def timer(self, t):
-        glutTimerFunc(t, self.timer, t)
+        glutTimerFunc(t, timer, t)
         glutPostRedisplay()
 
     def on_key(self, *args):
@@ -260,30 +257,30 @@ class window(object):
 
     def on_click(self, button, state, x, y):
         if state == GLUT_DOWN:
-            self.mouse_down = True
-            self.button = button
+            mouse_down = True
+            button = button
         else:
-            self.mouse_down = False
-        self.mouse_old['x'] = x
-        self.mouse_old['y'] = y
+            mouse_down = False
+        mouse_old['x'] = x
+        mouse_old['y'] = y
 
     
     def on_mouse_motion(self, x, y):
-        dx = x - self.mouse_old['x']
-        dy = y - self.mouse_old['y']
-        if self.mouse_down and self.button == 0: #left button
-            self.rotate['x'] += dy * .2
-            self.rotate['y'] += dx * .2
-        elif self.mouse_down and self.button == 2: #right button
-            self.translate['z'] -= dy * .01 
-        self.mouse_old['x'] = x
-        self.mouse_old['y'] = y
+        dx = x - mouse_old['x']
+        dy = y - mouse_old['y']
+        if mouse_down and button == 0: #left button
+            rotate['x'] += dy * .2
+            rotate['y'] += dx * .2
+        elif mouse_down and button == 2: #right button
+            translate['z'] -= dy * .01 
+        mouse_old['x'] = x
+        mouse_old['y'] = y
 
 
     def draw(self):
         """Render the particles"""        
         #update or particle positions by calling the OpenCL kernel
-        self.cle.execute(10) 
+        cle.execute(10) 
         glFlush()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -291,13 +288,13 @@ class window(object):
         glLoadIdentity()
 
         #handle mouse transformations
-        glTranslatef(self.initrans['x'], self.initrans['y'], self.initrans['z'])
-        glRotatef(self.rotate['x'], 1, 0, 0)
-        glRotatef(self.rotate['y'], 0, 1, 0) #we switched around the axis so make this rotate_z
-        glTranslatef(self.translate['x'], self.translate['y'], self.translate['z'])
+        glTranslatef(initrans['x'], initrans['y'], initrans['z'])
+        glRotatef(rotate['x'], 1, 0, 0)
+        glRotatef(rotate['y'], 0, 1, 0) #we switched around the axis so make this rotate_z
+        glTranslatef(translate['x'], translate['y'], translate['z'])
         
         #render the particles
-        self.cle.render()
+        cle.render()
 
         glutSwapBuffers()
 
