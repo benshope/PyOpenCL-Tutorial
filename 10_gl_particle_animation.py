@@ -38,10 +38,7 @@ def fountain(num_particles):
     pos[:,2] = 0.
     pos[:,3] = 1.
 
-    col[:,0] = 1.
-    col[:,1] = 1.
-    col[:,2] = 1.
-    col[:,3] = 1.
+    col[:,:] = [1.,1.,1.,1.] # White particles
 
     vel[:,0] = pos[:,0] * 2.
     vel[:,1] = pos[:,1] * 2.
