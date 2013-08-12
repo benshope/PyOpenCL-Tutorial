@@ -61,30 +61,17 @@ def timer(t):
     glutPostRedisplay()
 
 def on_key(*args):
-    print 'on key'
-    ESCAPE = '\033'
-    if args[0] == ESCAPE or args[0] == 'q':
+    if args[0] == '\033' or args[0] == 'q':
         sys.exit()
 
 def on_click(button, state, x, y):
-    print 'on click'
-    if state == GLUT_DOWN:
-        mouse_down = True
-        button = button
-    else:
-        mouse_down = False
     mouse_old['x'] = x
     mouse_old['y'] = y
 
 def on_mouse_motion(x, y):
-    print 'on mouse motion'
-    dx = x - mouse_old['x']
-    dy = y - mouse_old['y']
-    if mouse_down and button == 0: #left button
-        rotate['x'] += dy * .2
-        rotate['y'] += dx * .2
-    elif mouse_down and button == 2: #right button
-        translate['z'] -= dy * .01 
+    rotate['x'] += (y - mouse_old['y']) * .2
+    rotate['y'] += (x - mouse_old['x']) * .2
+
     mouse_old['x'] = x
     mouse_old['y'] = y
 
@@ -118,11 +105,9 @@ glutInitWindowPosition(0, 0)
 win = glutCreateWindow("Particle Simulation")
 
 glutDisplayFunc(draw)  # Called by GLUT every frame
-
 glutKeyboardFunc(on_key)
 glutMouseFunc(on_click)
 glutMotionFunc(on_mouse_motion)
-
 glutTimerFunc(30, timer, 30)  # Call draw every 30 ms
 
 # Set up the OpenGL scene
@@ -175,10 +160,10 @@ def render():
 
 
 platforms = cl.get_platforms()
-ctx = cl.Context(properties=[
+context = cl.Context(properties=[
     (cl.context_properties.PLATFORM, platforms[0])]
     + get_gl_sharing_context_properties(), devices=None)  
-queue = cl.CommandQueue(ctx)
+queue = cl.CommandQueue(context)
 
 
 kernel = """
@@ -224,37 +209,24 @@ __kernel void particle_fountain(__global float4* pos, __global float4* color, __
 
 }"""
 
-program = cl.Program(ctx, kernel).build()
+program = cl.Program(context, kernel).build()
 
-
-
-
-
-pos = pos_vbo.data
-col = col_vbo.data
 
 #Setup vertex buffer objects and share them with OpenCL as GLBuffers
 pos_vbo.bind()
-#For some there is no single buffer but an array of buffers
-try:
-    pos_cl = cl.GLBuffer(ctx, mf.READ_WRITE, int(pos_vbo.buffer))
-    col_cl = cl.GLBuffer(ctx, mf.READ_WRITE, int(col_vbo.buffer))
-except AttributeError:
-    pos_cl = cl.GLBuffer(ctx, mf.READ_WRITE, int(pos_vbo.buffers[0]))
-    col_cl = cl.GLBuffer(ctx, mf.READ_WRITE, int(col_vbo.buffers[0]))
 col_vbo.bind()
+pos_cl = cl.GLBuffer(context, mf.READ_WRITE, int(pos_vbo.buffers[0]))
+col_cl = cl.GLBuffer(context, mf.READ_WRITE, int(col_vbo.buffers[0]))
+
 
 #pure OpenCL arrays
-vel_cl = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=vel)
-pos_gen_cl = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=pos)
-vel_gen_cl = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=vel)
+vel_cl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=vel)
+pos_gen_cl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=pos_vbo.data)
+vel_gen_cl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=vel)
 queue.finish()
 
 # set up the list of GL objects to share with opencl
 gl_objects = [pos_cl, col_cl]
-
-
-
 
 
 
