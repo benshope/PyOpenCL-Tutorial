@@ -20,6 +20,57 @@ import numpy # Complicated number tools
 import sys # System tools (path, modules, maxint)
 import time # XXX
 
+
+
+class Vec(np.ndarray):
+    props = ['x', 'y', 'z', 'w']
+
+    def __new__(cls, input_array):
+        # Input array is an already formed ndarray instance
+        # We first cast to be our class type
+        obj = np.asarray(input_array).view(cls)
+        # add the new attribute to the created instance
+        if len(obj) < 2 or len(obj) > 4:
+            #not a 2,3 or 4 element vector!
+            return None
+        return obj
+
+    def __array_finalize__(self, obj):
+        #this gets called after object creation by numpy.ndarray
+        #print "array finalize", obj
+        if obj is None: return
+        #we set x, y etc properties by iterating through ndarray
+        for i in range(len(obj)):
+            setattr(self, Vec.props[i], obj[i])
+
+    def __array_wrap__(self, out_arr, context=None):
+        #this gets called after numpy functions are called on the array
+        #out_arr is the output (resulting) array
+        for i in range(len(out_arr)):
+            setattr(out_arr, Vec.props[i], out_arr[i])
+        return np.ndarray.__array_wrap__(self, out_arr, context)
+
+    def __repr__(self):
+        desc="""Vec2(data=%(data)s,"""  # x=%(x)s, y=%(y)s)"""
+        for i in range(len(self)):
+            desc += " %s=%s," % (Vec.props[i], getattr(self, Vec.props[i]))
+        desc = desc[:-1]    #cut off last comma
+        return desc % {'data': str(self) }
+
+
+    def __setitem__(self, ind, val):
+        #print "SETITEM", self.shape, ind, val
+        if self.shape == ():    #dirty hack for dot product
+            return
+        self.__dict__[Vec.props[ind]] = val
+        return np.ndarray.__setitem__(self, ind, val)
+    
+    def __setattr__(self, item, val):
+        self[Vec.props.index(item)] = val
+
+
+
+
 num_particles = 20000  # Number of particles
 time_step = .001  # Time between each animation frame
 window_width = 640  # Viewing window width
@@ -62,8 +113,6 @@ def tick(msecs):
 def key_press(*args):
     if args[0] == 'q':
         sys.exit()
-    elif args[0] == 't':
-        print cle.timings
 
 def click(button, state, x, y):
     if state == GLUT_DOWN:
@@ -104,10 +153,47 @@ def draw():
     #render the particles
     cle.render()
 
-    #draw the x, y and z axis as lines
-    glutil.draw_axes()
-
     glutSwapBuffers()
+
+def lights():
+    glEnable(GL_LIGHTING)
+    glEnable(GL_COLOR_MATERIAL)
+
+    light_position = [10., 10., 200., 0.]
+    light_ambient = [.2, .2, .2, 1.]
+    light_diffuse = [.6, .6, .6, 1.]
+    light_specular = [2., 2., 2., 0.]
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position)
+    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient)
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse)
+    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular)
+    glEnable(GL_LIGHT0)
+
+    mat_ambient = [.2, .2, 1.0, 1.0]
+    mat_diffuse = [.2, .8, 1.0, 1.0]
+    mat_specular = [1.0, 1.0, 1.0, 1.0]
+    high_shininess = 3.
+
+    mat_ambient_back = [.5, .2, .2, 1.0]
+    mat_diffuse_back = [1.0, .2, .2, 1.0]
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT,   mat_ambient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE,   mat_diffuse);
+    glMaterialfv(GL_FRONT, GL_SPECULAR,  mat_specular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
+
+    glMaterialfv(GL_BACK, GL_AMBIENT,   mat_ambient_back);
+    glMaterialfv(GL_BACK, GL_DIFFUSE,   mat_diffuse_back);
+    glMaterialfv(GL_BACK, GL_SPECULAR,  mat_specular);
+    glMaterialfv(GL_BACK, GL_SHININESS, high_shininess);
+
+
+def draw_line(v1, v2):
+    glBegin(GL_LINES)
+    glVertex3f(v1.x, v1.y, v1.z)
+    glVertex3f(v2.x, v2.y, v2.z)
+    glEnd()
+
 
 # ===== NOUN FUNCTIONS ===== these return something
 
