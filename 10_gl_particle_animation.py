@@ -128,7 +128,7 @@ glutMotionFunc(on_mouse_motion)
 
 glutTimerFunc(30, timer, 30)  # Call draw every 30 ms
 
-#setup OpenGL scene
+# Set up the OpenGL scene
 glViewport(0, 0, width, height)
 glMatrixMode(GL_PROJECTION)
 glLoadIdentity()
@@ -138,10 +138,7 @@ glMatrixMode(GL_MODELVIEW)
 # Set up initial conditions
 (pos_vbo, col_vbo, vel) = fountain(num_particles)
 
-# Create our OpenCL instance
 
-
-    
 def execute(sub_intervals):
     cl.enqueue_acquire_gl_objects(queue, gl_objects)
 
@@ -178,7 +175,6 @@ def render():
     glDisableClientState(GL_VERTEX_ARRAY)
 
     glDisable(GL_BLEND)
-
 
 
 platforms = cl.get_platforms()
