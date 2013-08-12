@@ -2,6 +2,7 @@
 
 import pyopencl as cl # OpenCL - GPU computing interface
 mf = cl.mem_flags
+from pyopencl.tools import get_gl_sharing_context_properties
 from OpenGL.GL import * # OpenGL - GPU rendering interface
 from OpenGL.GLU import * # OpenGL tools (mipmaps, NURBS, perspective projection, shapes)
 from OpenGL.GLUT import * # OpenGL tool to make a visualization window
@@ -21,142 +22,7 @@ rotate = {'x': 0., 'y': 0., 'z': 0.}
 translate = {'x': 0., 'y': 0., 'z': 0.}
 initrans = {'x': 0., 'y': 0., 'z': -2.}
 
-class Part2(object):
-    def __init__(self, num_particles, time_step, *args, **kwargs):
-        self.cl_init()
-        
-        kernel = """
-        __kernel void part2(__global float4* pos, __global float4* color, __global float4* vel, __global float4* pos_gen, __global float4* vel_gen, float time_step)
-        {
-            //get our index in the array
-            unsigned int i = get_global_id(0);
-            //copy position and velocity for this iteration to a local variable
-            //note: if we were doing many more calculations we would want to have opencl
-            //copy to a local memory array to speed up memory access (this will be the subject of a later tutorial)
-            float4 p = pos[i];
-            float4 v = vel[i];
-
-            //we've stored the life in the fourth component of our velocity array
-            float life = vel[i].w;
-            //decrease the life by the time step (this value could be adjusted to lengthen or shorten particle life
-            life -= time_step;
-            //if the life is 0 or less we reset the particle's values back to the original values and set life to 1
-            if(life <= 0.f)
-            {
-                p = pos_gen[i];
-                v = vel_gen[i];
-                life = 1.0f;    
-            }
-
-            //we use a first order euler method to integrate the velocity and position (i'll expand on this in another tutorial)
-            //update the velocity to be affected by "gravity" in the z direction
-            v.z -= 9.8f*time_step;
-            //update the position with the new velocity
-            p.x += v.x*time_step;
-            p.y += v.y*time_step;
-            p.z += v.z*time_step;
-            //store the updated life in the velocity array
-            v.w = life;
-
-            //update the arrays with our newly computed values
-            pos[i] = p;
-            vel[i] = v;
-
-            //you can manipulate the color based on properties of the system
-            //here we adjust the alpha
-            color[i].w = life;
-
-        }"""
-
-        self.program = cl.Program(self.ctx, kernel).build()
-
-        self.num_particles = num_particles
-        self.time_step = numpy.float32(time_step)
-
-
-    def loadData(self, pos_vbo, col_vbo, vel):
-        self.pos_vbo = pos_vbo
-        self.col_vbo = col_vbo
-
-        self.pos = pos_vbo.data
-        self.col = col_vbo.data
-        self.vel = vel
-
-        #Setup vertex buffer objects and share them with OpenCL as GLBuffers
-        self.pos_vbo.bind()
-        #For some there is no single buffer but an array of buffers
-        try:
-            self.pos_cl = cl.GLBuffer(self.ctx, mf.READ_WRITE, int(self.pos_vbo.buffer))
-            self.col_cl = cl.GLBuffer(self.ctx, mf.READ_WRITE, int(self.col_vbo.buffer))
-        except AttributeError:
-            self.pos_cl = cl.GLBuffer(self.ctx, mf.READ_WRITE, int(self.pos_vbo.buffers[0]))
-            self.col_cl = cl.GLBuffer(self.ctx, mf.READ_WRITE, int(self.col_vbo.buffers[0]))
-        self.col_vbo.bind()
-
-        #pure OpenCL arrays
-        self.vel_cl = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=vel)
-        self.pos_gen_cl = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=self.pos)
-        self.vel_gen_cl = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=self.vel)
-        self.queue.finish()
-
-        # set up the list of GL objects to share with opencl
-        self.gl_objects = [self.pos_cl, self.col_cl]
-        
-    def execute(self, sub_intervals):
-        cl.enqueue_acquire_gl_objects(self.queue, self.gl_objects)
-
-        global_size = (self.num_particles,)
-        local_size = None
-
-        kernelargs = (self.pos_cl, 
-                      self.col_cl, 
-                      self.vel_cl, 
-                      self.pos_gen_cl, 
-                      self.vel_gen_cl, 
-                      self.time_step)
-
-        for i in xrange(0, sub_intervals):
-            self.program.part2(self.queue, global_size, local_size, *(kernelargs))
-
-        cl.enqueue_release_gl_objects(self.queue, self.gl_objects)
-        self.queue.finish()
- 
-    def cl_init(self):
-        platforms = cl.get_platforms()
-        from pyopencl.tools import get_gl_sharing_context_properties
-
-        self.ctx = cl.Context(properties=[
-            (cl.context_properties.PLATFORM, platforms[0])]
-            + get_gl_sharing_context_properties(), devices=None)
-                
-        self.queue = cl.CommandQueue(self.ctx)
-
-
-    def render(self):
-        
-        glEnable(GL_POINT_SMOOTH)
-        glPointSize(2)
-        glEnable(GL_BLEND)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-
-        #setup the VBOs
-        self.col_vbo.bind()
-        glColorPointer(4, GL_FLOAT, 0, self.col_vbo)
-
-        self.pos_vbo.bind()
-        glVertexPointer(4, GL_FLOAT, 0, self.pos_vbo)
-
-        glEnableClientState(GL_VERTEX_ARRAY)
-        glEnableClientState(GL_COLOR_ARRAY)
-        #draw the VBOs
-        glDrawArrays(GL_POINTS, 0, self.num_particles)
-
-        glDisableClientState(GL_COLOR_ARRAY)
-        glDisableClientState(GL_VERTEX_ARRAY)
-
-        glDisable(GL_BLEND)
-
-
+# Create buffer of initial positions
 def fountain(num_particles):
     """Initialize position, color and velocity arrays we also make Vertex
     Buffer Objects for the position and color arrays"""
@@ -228,7 +94,7 @@ def on_mouse_motion(x, y):
 def draw():
     """Render the particles"""        
     #update or particle positions by calling the OpenCL kernel
-    cle.execute(10) 
+    execute(10) 
     glFlush()
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -243,7 +109,7 @@ def draw():
     glTranslatef(translate['x'], translate['y'], translate['z'])
     
     #render the particles
-    cle.render()
+    render()
 
     glutSwapBuffers()
 
@@ -273,7 +139,126 @@ glMatrixMode(GL_MODELVIEW)
 (pos_vbo, col_vbo, vel) = fountain(num_particles)
 
 # Create our OpenCL instance
-cle = Part2(num_particles, time_step)
-cle.loadData(pos_vbo, col_vbo, vel)
+
+
+
+    
+def execute(sub_intervals):
+    cl.enqueue_acquire_gl_objects(queue, gl_objects)
+
+    global_size = (num_particles,)
+    local_size = None
+
+    kernelargs = (pos_cl, col_cl, vel_cl, pos_gen_cl, vel_gen_cl, numpy.float32(time_step))
+
+    for i in xrange(0, sub_intervals):
+        program.part2(queue, global_size, local_size, *(kernelargs))
+
+    cl.enqueue_release_gl_objects(queue, gl_objects)
+    queue.finish()
+
+def render():
+    glEnable(GL_POINT_SMOOTH)
+    glPointSize(2)
+    glEnable(GL_BLEND)
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
+    #setup the VBOs
+    col_vbo.bind()
+    glColorPointer(4, GL_FLOAT, 0, col_vbo)
+
+    pos_vbo.bind()
+    glVertexPointer(4, GL_FLOAT, 0, pos_vbo)
+
+    glEnableClientState(GL_VERTEX_ARRAY)
+    glEnableClientState(GL_COLOR_ARRAY)
+    #draw the VBOs
+    glDrawArrays(GL_POINTS, 0, num_particles)
+
+    glDisableClientState(GL_COLOR_ARRAY)
+    glDisableClientState(GL_VERTEX_ARRAY)
+
+    glDisable(GL_BLEND)
+
+
+
+
+platforms = cl.get_platforms()
+ctx = cl.Context(properties=[
+    (cl.context_properties.PLATFORM, platforms[0])]
+    + get_gl_sharing_context_properties(), devices=None)  
+queue = cl.CommandQueue(ctx)
+
+
+kernel = """
+__kernel void part2(__global float4* pos, __global float4* color, __global float4* vel, __global float4* pos_gen, __global float4* vel_gen, float time_step)
+{
+    //get our index in the array
+    unsigned int i = get_global_id(0);
+    //copy position and velocity for this iteration to a local variable
+    //note: if we were doing many more calculations we would want to have opencl
+    //copy to a local memory array to speed up memory access (this will be the subject of a later tutorial)
+    float4 p = pos[i];
+    float4 v = vel[i];
+
+    //we've stored the life in the fourth component of our velocity array
+    float life = vel[i].w;
+    //decrease the life by the time step (this value could be adjusted to lengthen or shorten particle life
+    life -= time_step;
+    //if the life is 0 or less we reset the particle's values back to the original values and set life to 1
+    if(life <= 0.f)
+    {
+        p = pos_gen[i];
+        v = vel_gen[i];
+        life = 1.0f;    
+    }
+
+    //we use a first order euler method to integrate the velocity and position (i'll expand on this in another tutorial)
+    //update the velocity to be affected by "gravity" in the z direction
+    v.z -= 9.8f*time_step;
+    //update the position with the new velocity
+    p.x += v.x*time_step;
+    p.y += v.y*time_step;
+    p.z += v.z*time_step;
+    //store the updated life in the velocity array
+    v.w = life;
+
+    //update the arrays with our newly computed values
+    pos[i] = p;
+    vel[i] = v;
+
+    //you can manipulate the color based on properties of the system
+    //here we adjust the alpha
+    color[i].w = life;
+
+}"""
+
+program = cl.Program(ctx, kernel).build()
+
+
+pos = pos_vbo.data
+col = col_vbo.data
+
+#Setup vertex buffer objects and share them with OpenCL as GLBuffers
+pos_vbo.bind()
+#For some there is no single buffer but an array of buffers
+try:
+    pos_cl = cl.GLBuffer(ctx, mf.READ_WRITE, int(pos_vbo.buffer))
+    col_cl = cl.GLBuffer(ctx, mf.READ_WRITE, int(col_vbo.buffer))
+except AttributeError:
+    pos_cl = cl.GLBuffer(ctx, mf.READ_WRITE, int(pos_vbo.buffers[0]))
+    col_cl = cl.GLBuffer(ctx, mf.READ_WRITE, int(col_vbo.buffers[0]))
+col_vbo.bind()
+
+#pure OpenCL arrays
+vel_cl = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=vel)
+pos_gen_cl = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=pos)
+vel_gen_cl = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=vel)
+queue.finish()
+
+# set up the list of GL objects to share with opencl
+gl_objects = [pos_cl, col_cl]
+
+
 
 glutMainLoop()
