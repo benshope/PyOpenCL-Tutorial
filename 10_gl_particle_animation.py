@@ -12,10 +12,14 @@ import time # XXX
 
 width = 800
 height = 600
-#number of particles
 num_particles = 50000
-#time step for integration
 time_step = .001
+
+mouse_down = False
+mouse_old = {'x': 0., 'y': 0.}
+rotate = {'x': 0., 'y': 0., 'z': 0.}
+translate = {'x': 0., 'y': 0., 'z': 0.}
+initrans = {'x': 0., 'y': 0., 'z': -2.}
 
 class Part2(object):
     def __init__(self, num_particles, time_step, *args, **kwargs):
@@ -153,8 +157,6 @@ class Part2(object):
         glDisable(GL_BLEND)
 
 
-
-
 def fountain(num_particles):
     """Initialize position, color and velocity arrays we also make Vertex
     Buffer Objects for the position and color arrays"""
@@ -190,8 +192,7 @@ def fountain(num_particles):
     return (pos_vbo, col_vbo, vel)
     
 
-
-# GL Callbacks
+# GL callback functions
 def timer(t):
     glutTimerFunc(t, timer, t)
     glutPostRedisplay()
@@ -247,29 +248,19 @@ def draw():
     glutSwapBuffers()
 
 
-#mouse handling for transforming scene
-mouse_down = False
-mouse_old = {'x': 0., 'y': 0.}
-rotate = {'x': 0., 'y': 0., 'z': 0.}
-translate = {'x': 0., 'y': 0., 'z': 0.}
-initrans = {'x': 0., 'y': 0., 'z': -2.}
-
 glutInit(sys.argv)
 glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
 glutInitWindowSize(width, height)
 glutInitWindowPosition(0, 0)
 win = glutCreateWindow("Part 2: Python")
 
-#gets called by GLUT every frame
-glutDisplayFunc(draw)
+glutDisplayFunc(draw)  # Called by GLUT every frame
 
-#handle user input
 glutKeyboardFunc(on_key)
 glutMouseFunc(on_click)
 glutMotionFunc(on_mouse_motion)
 
-#this will call draw every 30 ms
-glutTimerFunc(30, timer, 30)
+glutTimerFunc(30, timer, 30)  # Call draw every 30 ms
 
 #setup OpenGL scene
 glViewport(0, 0, width, height)
@@ -278,9 +269,10 @@ glLoadIdentity()
 gluPerspective(60., width / float(height), .1, 1000.)
 glMatrixMode(GL_MODELVIEW)
 
-#set up initial conditions
+# Set up initial conditions
 (pos_vbo, col_vbo, vel) = fountain(num_particles)
-#create our OpenCL instance
+
+# Create our OpenCL instance
 cle = Part2(num_particles, time_step)
 cle.loadData(pos_vbo, col_vbo, vel)
 
