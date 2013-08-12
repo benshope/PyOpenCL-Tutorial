@@ -141,7 +141,6 @@ glMatrixMode(GL_MODELVIEW)
 # Create our OpenCL instance
 
 
-
     
 def execute(sub_intervals):
     cl.enqueue_acquire_gl_objects(queue, gl_objects)
@@ -179,7 +178,6 @@ def render():
     glDisableClientState(GL_VERTEX_ARRAY)
 
     glDisable(GL_BLEND)
-
 
 
 
@@ -236,6 +234,9 @@ __kernel void part2(__global float4* pos, __global float4* color, __global float
 program = cl.Program(ctx, kernel).build()
 
 
+
+
+
 pos = pos_vbo.data
 col = col_vbo.data
 
@@ -258,6 +259,9 @@ queue.finish()
 
 # set up the list of GL objects to share with opencl
 gl_objects = [pos_cl, col_cl]
+
+
+
 
 
 
