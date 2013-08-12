@@ -42,8 +42,7 @@ def fountain(num_particles):
     col[:,1] = 1.
     col[:,2] = 1.
     col[:,3] = 1.
-    print col
-    print col.size()
+
     vel[:,0] = pos[:,0] * 2.
     vel[:,1] = pos[:,1] * 2.
     vel[:,2] = 3.
