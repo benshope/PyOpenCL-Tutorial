@@ -2,13 +2,13 @@
 
 import pyopencl as cl # OpenCL - GPU computing interface
 mf = cl.mem_flags
-from OpenGL.GL import *  # OpenGL - GPU rendering interface
-from OpenGL.GLU import *  # OpenGL tools (mipmaps, NURBS, perspective projection, shapes)
-from OpenGL.GLUT import *  # OpenGL tool to make a visualization window
+from OpenGL.GL import * # OpenGL - GPU rendering interface
+from OpenGL.GLU import * # OpenGL tools (mipmaps, NURBS, perspective projection, shapes)
+from OpenGL.GLUT import * # OpenGL tool to make a visualization window
 import math # Simple number tools
 import numpy # Complicated number tools
 import sys # System tools (path, modules, maxint)
-import time # XXX
+import time # Time tools
 
 width = 800
 height = 600
@@ -23,7 +23,7 @@ initrans = {'x': 0., 'y': 0., 'z': -2.}
 
 class Part2(object):
     def __init__(self, num_particles, time_step, *args, **kwargs):
-        self.clinit()
+        self.cl_init()
         
         kernel = """
         __kernel void part2(__global float4* pos, __global float4* color, __global float4* vel, __global float4* pos_gen, __global float4* vel_gen, float time_step)
@@ -121,7 +121,7 @@ class Part2(object):
         cl.enqueue_release_gl_objects(self.queue, self.gl_objects)
         self.queue.finish()
  
-    def clinit(self):
+    def cl_init(self):
         platforms = cl.get_platforms()
         from pyopencl.tools import get_gl_sharing_context_properties
 
