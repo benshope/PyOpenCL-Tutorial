@@ -47,7 +47,6 @@ class Vec(numpy.ndarray):
         desc = desc[:-1]    #cut off last comma
         return desc % {'data': str(self) }
 
-
     def __setitem__(self, ind, val):
         #print "SETITEM", self.shape, ind, val
         if self.shape == ():    #dirty hack for dot product
@@ -58,51 +57,7 @@ class Vec(numpy.ndarray):
     def __setattr__(self, item, val):
         self[Vec.props.index(item)] = val
 
-#OpenCL code
-class Timing(object):
-    def __init__(self):
-        self.timings = {}
-        self.col = self.__collector()
-        self.col.next()                 #coroutine syntax
 
-    def __collector(self):
-        while True:
-            (name, t) = (yield)         #coroutine syntax
-            if name in self.timings:
-                self.timings[name]["timings"] += [t]
-                self.timings[name]["count"] += 1
-                self.timings[name]["total"] += t
-            else:
-                self.timings[name] = {} #if this entry doesn't exist yet
-                self.timings[name]["timings"] = [t]
-                self.timings[name]["count"] = 1
-                self.timings[name]["total"] = t
-
-    def __call__(self, func):
-        """Turn the object into a decorator"""
-        def wrapper(*arg, **kwargs):
-            t1 = time.time()                #start time
-            res = func(*arg, **kwargs)      #call the originating function
-            t2 = time.time()                #stop time
-            t = (t2-t1)*1000.0              #time in milliseconds
-            data = (func.__name__, t)
-            self.col.send(data)             #collect the data
-            return res 
-        return wrapper
-
-    def __str__(self):
-        s = "Timings:\n"
-        #print dir(self)
-        for key in self.timings.keys():
-            s += "%s | " % key 
-            ts = self.timings[key]["timings"]
-            count = self.timings[key]["count"]
-            total = self.timings[key]["total"]
-            s += "average: %s | total: %s | count: %s\n" % (total / count, total, count)
-        return "%s" % s 
-
-
-timings = Timing()
 class Part2(object):
     def __init__(self, num, dt, *args, **kwargs):
         self.clinit()
@@ -155,8 +110,6 @@ class Part2(object):
         self.num = num
         self.dt = numpy.float32(dt)
 
-        self.timings = timings
-
 
 
     def loadData(self, pos_vbo, col_vbo, vel):
@@ -192,7 +145,6 @@ class Part2(object):
         
 
 
-    @timings
     def execute(self, sub_intervals):
         cl.enqueue_acquire_gl_objects(self.queue, self.gl_objects)
 
@@ -292,8 +244,6 @@ def fountain(num):
     #pos, col, vel = fountain_loopy(num)
     pos, col, vel = fountain_np(num)
     
-    print timings
-
     #create the Vertex Buffer Objects
     from OpenGL.arrays import vbo 
     pos_vbo = vbo.VBO(data=pos, usage=GL_DYNAMIC_DRAW, target=GL_ARRAY_BUFFER)
@@ -363,8 +313,6 @@ class window(object):
         ESCAPE = '\033'
         if args[0] == ESCAPE or args[0] == 'q':
             sys.exit()
-        elif args[0] == 't':
-            print self.cle.timings
 
     def on_click(self, button, state, x, y):
         if state == GLUT_DOWN:
