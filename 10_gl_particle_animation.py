@@ -153,8 +153,12 @@ class Part2(object):
         glDisable(GL_BLEND)
 
 
-def fountain_np(num_particles):
-    """numpy way of initializing data using ufuncs instead of loops"""
+
+
+def fountain(num_particles):
+    """Initialize position, color and velocity arrays we also make Vertex
+    Buffer Objects for the position and color arrays"""
+
     pos = numpy.ndarray((num_particles, 4), dtype=numpy.float32)
     col = numpy.ndarray((num_particles, 4), dtype=numpy.float32)
     vel = numpy.ndarray((num_particles, 4), dtype=numpy.float32)
@@ -175,16 +179,6 @@ def fountain_np(num_particles):
     vel[:,1] = pos[:,1] * 2.
     vel[:,2] = 3.
     vel[:,3] = numpy.random.random_sample((num_particles, ))
-
-    return pos, col, vel
-
-
-def fountain(num_particles):
-    """Initialize position, color and velocity arrays we also make Vertex
-    Buffer Objects for the position and color arrays"""
-
-    #pos, col, vel = fountain_loopy(num_particles)
-    pos, col, vel = fountain_np(num_particles)
     
     #create the Vertex Buffer Objects
     from OpenGL.arrays import vbo 
