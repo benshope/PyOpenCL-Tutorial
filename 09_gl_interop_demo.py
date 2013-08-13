@@ -1,6 +1,6 @@
 # Visualize a sine wave
 
-# XXX This does not seem to work on mac.  Find out why XXX
+# XXX This does not seem to work on mac XXX
 
 from OpenGL.GL import *  # Import the GPU rendering interface
 from OpenGL.GLUT import *  # Import the OpenGL tool to make a visualization window

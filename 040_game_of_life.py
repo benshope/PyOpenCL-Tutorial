@@ -1,17 +1,16 @@
-# Display the mandelbrot set
+# Display Conway's Game of Life
 
 import pyopencl as cl
 import numpy
 from time import time
-import Tkinter as tk  # XXX What are these three imports?  Why are they here? XXX
-import Image          # PIL
-import ImageTk        # PIL
+import Tkinter as tk  # The standard GUI (Graphical User Interface) package
+import Image          # Tools for working with images
+import ImageTk        # Tools to use Image with Tkinter
 
 w = 1024
 h = 1024
-# Set the width and height of the window
 
-def calc_fractal_opencl(q, maxiter):
+def calc_fractal(q, maxiter):
     context = cl.create_some_context()
     queue = cl.CommandQueue(context)
 
@@ -50,33 +49,6 @@ def calc_fractal_opencl(q, maxiter):
 
     return output
 
-def calc_fractal_numpy(q, maxiter):
-    output = numpy.resize(numpy.array(0,), q.shape)
-    z = numpy.zeros(q.shape, numpy.complex64)
-
-    for iter in range(maxiter):
-        z = z*z + q
-        done = numpy.greater(abs(z), 2.0)
-        q = numpy.where(done,0+0j, q)
-        z = numpy.where(done,0+0j, z)
-        output = numpy.where(done, iter, output)
-    return output
-
-def calc_fractal_serial(q, maxiter):
-    z = numpy.zeros(q.shape, numpy.complex64)
-    output = numpy.resize(numpy.array(0,), q.shape)
-    for i in range(len(q)):
-        for iter in range(maxiter):
-            z[i] = z[i]*z[i] + q[i]
-            if abs(z[i]) > 2.0:
-                q[i] = 0+0j
-                z[i] = 0+0j
-                output[i] = iter
-    return output
-
-calc_fractal = calc_fractal_opencl
-# calc_fractal = calc_fractal_serial
-# calc_fractal = calc_fractal_numpy
 
 if __name__ == '__main__':
     class Mandelbrot(object):
@@ -125,4 +97,3 @@ if __name__ == '__main__':
 
     # test the class
     test = Mandelbrot()
-

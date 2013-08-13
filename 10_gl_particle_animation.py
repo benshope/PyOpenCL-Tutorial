@@ -12,14 +12,14 @@ import sys # System tools (path, modules, maxint)
 
 width = 800
 height = 600
-num_particles = 50000
+num_particles = 900000
 time_step = .001
 
 mouse_down = False
 mouse_old = {'x': 0., 'y': 0.}
 rotate = {'x': 0., 'y': 0., 'z': 0.}
 translate = {'x': 0., 'y': 0., 'z': 0.}
-initrans = {'x': 0., 'y': 0., 'z': -2.}
+initial_translate = {'x': 0., 'y': 0., 'z': -2.5}
 
 # Create buffer of initial positions
 def particle_start_values(num_particles):
@@ -76,7 +76,7 @@ def on_mouse_move(x, y):
 
 def draw():
     """Render the particles"""        
-    #update or particle positions by calling the OpenCL kernel
+    # Update or particle positions by calling the OpenCL kernel
     execute(10) 
     glFlush()
 
@@ -84,13 +84,13 @@ def draw():
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
 
-    #handle mouse transformations
-    glTranslatef(initrans['x'], initrans['y'], initrans['z'])
+    # Handle mouse transformations
+    glTranslatef(initial_translate['x'], initial_translate['y'], initial_translate['z'])
     glRotatef(rotate['x'], 1, 0, 0)
     glRotatef(rotate['y'], 0, 1, 0) #we switched around the axis so make this rotate_z
     glTranslatef(translate['x'], translate['y'], translate['z'])
     
-    #render the particles
+    # Render the particles
     render()
 
     glutSwapBuffers()
