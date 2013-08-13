@@ -83,8 +83,7 @@ def draw():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
-    rotate['x'] += .5
-    rotate['y'] += -.5
+
     #handle mouse transformations
     glTranslatef(initrans['x'], initrans['y'], initrans['z'])
     glRotatef(rotate['x'], 1, 0, 0)
