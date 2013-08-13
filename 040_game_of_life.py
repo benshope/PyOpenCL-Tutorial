@@ -50,50 +50,41 @@ def calc_fractal(q, maxiter):
     return output
 
 
-if __name__ == '__main__':
-    class Mandelbrot(object):
-        def __init__(self):
-            # Create the window
-            self.root = tk.Tk()
-            self.root.title("Mandelbrot Set")
-            self.create_image()
-            self.create_label()
-            # Start the event loop
-            self.root.mainloop()
 
-        def draw(self, x1, x2, y1, y2, maxiter=30):
-            # draw the Mandelbrot set, from numpy example
-            xx = numpy.arange(x1, x2, (x2-x1)/w)
-            yy = numpy.arange(y2, y1, (y1-y2)/h) * 1j
-            q = numpy.ravel(xx+yy[:, numpy.newaxis]).astype(numpy.complex64)
+def draw(x1, x2, y1, y2, maxiter=30):
+    # draw the Mandelbrot set, from numpy example
+    xx = numpy.arange(x1, x2, (x2-x1)/w)
+    yy = numpy.arange(y2, y1, (y1-y2)/h) * 1j
+    q = numpy.ravel(xx+yy[:, numpy.newaxis]).astype(numpy.complex64)
 
-            start_main = time()
-            output = calc_fractal(q, maxiter)
-            end_main = time()
+    start_main = time()
+    output = calc_fractal(q, maxiter)
+    end_main = time()
 
-            secs = end_main - start_main
-            print("Main took", secs)
+    secs = end_main - start_main
+    print("Main took", secs)
 
-            self.mandel = (output.reshape((h,w)) /
-                    float(output.max()) * 255.).astype(numpy.uint8)
+    return (output.reshape((h,w)) /
+            float(output.max()) * 255.).astype(numpy.uint8)
 
-        def create_image(self):
-            """"
-            create the image from the draw() string
-            """
-            # you can experiment with these x and y ranges
-            self.draw(-2.13, 0.77, -1.3, 1.3)
-            self.im = Image.fromarray(self.mandel)
-            self.im.putpalette(reduce(
-                lambda a,b: a+b, ((i,0,0) for i in range(255))
-            ))
+def create_image():
+    mandel = draw(-2.13, 0.77, -1.3, 1.3)
+    im = Image.fromarray(mandel)
+    im.putpalette(reduce(
+        lambda a,b: a+b, ((i,0,0) for i in range(255))
+    ))
+    return im
 
+def create_label(im):
+    # put the image on a label widget
+    image = ImageTk.PhotoImage(im)
+    label = tk.Label(window, image=image)
+    label.pack()
+    return label
 
-        def create_label(self):
-            # put the image on a label widget
-            self.image = ImageTk.PhotoImage(self.im)
-            self.label = tk.Label(self.root, image=self.image)
-            self.label.pack()
-
-    # test the class
-    test = Mandelbrot()
+window = tk.Tk()
+window.title("Mandelbrot Set")
+im = create_image()
+label = create_label(im)
+# Start the event loop
+window.mainloop()

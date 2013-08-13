@@ -58,8 +58,6 @@ def reshape(width, height):
 
 if __name__ == '__main__':
     glutInit(sys.argv)
-    if len(sys.argv) > 1:
-        num_points = int(sys.argv[1])
     glutInitWindowSize(800, 160)
     glutInitWindowPosition(0, 0)
     glutCreateWindow('OpenCL/OpenGL Interop Tutorial: Sin Generator')
