@@ -22,7 +22,7 @@ translate = {'x': 0., 'y': 0., 'z': 0.}
 initrans = {'x': 0., 'y': 0., 'z': -2.}
 
 # Create buffer of initial positions
-def fountain(num_particles):
+def particle_start_values(num_particles):
     """Initialize position, color and velocity arrays we also make Vertex
     Buffer Objects for the position and color arrays"""
 
@@ -124,7 +124,7 @@ gl_setup()
 
 
 # Set up initial conditions
-(pos_vbo, col_vbo, vel) = fountain(num_particles)
+(pos_vbo, col_vbo, vel) = particle_start_values(num_particles)
 
 
 def execute(sub_intervals):
