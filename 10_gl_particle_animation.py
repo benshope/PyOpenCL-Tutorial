@@ -9,7 +9,6 @@ from OpenGL.GLUT import * # OpenGL tool to make a visualization window
 import math # Simple number tools
 import numpy # Complicated number tools
 import sys # System tools (path, modules, maxint)
-import time # Time tools
 
 width = 800
 height = 600
@@ -68,7 +67,7 @@ def on_click(button, state, x, y):
     mouse_old['x'] = x
     mouse_old['y'] = y
 
-def on_mouse_motion(x, y):
+def on_mouse_move(x, y):
     rotate['x'] += (y - mouse_old['y']) * .2
     rotate['y'] += (x - mouse_old['x']) * .2
 
@@ -97,25 +96,32 @@ def draw():
 
     glutSwapBuffers()
 
+def glut_setup():
+    glutInit(sys.argv)
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
+    glutInitWindowSize(width, height)
+    glutInitWindowPosition(0, 0)
+    window = glutCreateWindow("Particle Simulation")
 
-glutInit(sys.argv)
-glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
-glutInitWindowSize(width, height)
-glutInitWindowPosition(0, 0)
-window = glutCreateWindow("Particle Simulation")
+    glutDisplayFunc(draw)  # Called by GLUT every frame
+    glutKeyboardFunc(on_key)
+    glutMouseFunc(on_click)
+    glutMotionFunc(on_mouse_move)
+    glutTimerFunc(30, timer, 30)  # Call draw every 30 ms
+    return(window)
 
-glutDisplayFunc(draw)  # Called by GLUT every frame
-glutKeyboardFunc(on_key)
-glutMouseFunc(on_click)
-glutMotionFunc(on_mouse_motion)
-glutTimerFunc(30, timer, 30)  # Call draw every 30 ms
+def gl_setup():
+    # Set up the OpenGL scene
+    glViewport(0, 0, width, height)
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+    gluPerspective(60., width / float(height), .1, 1000.)
+    glMatrixMode(GL_MODELVIEW)
 
-# Set up the OpenGL scene
-glViewport(0, 0, width, height)
-glMatrixMode(GL_PROJECTION)
-glLoadIdentity()
-gluPerspective(60., width / float(height), .1, 1000.)
-glMatrixMode(GL_MODELVIEW)
+window = glut_setup()
+
+gl_setup()
+
 
 # Set up initial conditions
 (pos_vbo, col_vbo, vel) = fountain(num_particles)
@@ -209,22 +215,20 @@ __kernel void particle_fountain(__global float4* pos, __global float4* color, __
 
 program = cl.Program(context, kernel).build()
 
-#Setup vertex buffer objects and share them with OpenCL as GLBuffers
+# Set up vertex buffer objects and share them with OpenCL as GLBuffers
 pos_vbo.bind()
 col_vbo.bind()
 pos_cl = cl.GLBuffer(context, mf.READ_WRITE, int(pos_vbo.buffers[0]))
 col_cl = cl.GLBuffer(context, mf.READ_WRITE, int(col_vbo.buffers[0]))
 
-
-#pure OpenCL arrays
+# Pure OpenCL arrays
 vel_cl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=vel)
 pos_gen_cl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=pos_vbo.data)
 vel_gen_cl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=vel)
 queue.finish()
 
-# set up the list of GL objects to share with opencl
+# Set up the list of GL objects to share with OpenCL
 gl_objects = [pos_cl, col_cl]
-
 
 
 glutMainLoop()
