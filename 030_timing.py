@@ -18,8 +18,8 @@ def cpu_array_sum(a, b):  # Sum two arrays on the CPU
     return c_cpu  # Return the sum of the arrays
 
 def gpu_array_sum(a, b):
-    context = cl.create_some_context()  # Initialize the Context (One Per-Computer)
-    queue = cl.CommandQueue(context, properties=cl.command_queue_properties.PROFILING_ENABLE)  # Instantiate a Queue (One-Per Device) with profiling (timing) enabled
+    context = cl.create_some_context()  # Initialize the Context
+    queue = cl.CommandQueue(context, properties=cl.command_queue_properties.PROFILING_ENABLE)  # Instantiate a Queue with profiling (timing) enabled
     a_buffer = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=a)
     b_buffer = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=b)
     c_buffer = cl.Buffer(context, cl.mem_flags.WRITE_ONLY, b.nbytes)  # Create three buffers (plans for areas of memory on the device)

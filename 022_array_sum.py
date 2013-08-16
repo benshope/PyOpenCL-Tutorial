@@ -4,8 +4,8 @@ import pyopencl as cl  # Import the OpenCL GPU computing API
 import pyopencl.array as cl_array  # Import PyOpenCL Array (a Numpy array plus an OpenCL buffer object)
 import numpy  # Import Numpy number tools
 
-context = cl.create_some_context()  # Initialize the Context (one per host)
-queue = cl.CommandQueue(context)  # Instantiate a Queue (one per device)
+context = cl.create_some_context()  # Initialize the Context
+queue = cl.CommandQueue(context)  # Instantiate a Queue
 
 a = cl_array.to_device(queue, numpy.random.randn(10).astype(numpy.float32))  # Create a random pyopencl array
 b = cl_array.to_device(queue, numpy.random.randn(10).astype(numpy.float32))  # Create a random pyopencl array
