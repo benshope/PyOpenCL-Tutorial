@@ -7,7 +7,6 @@ block_size = 16
 context = cl.create_some_context()
 queue = cl.CommandQueue(context, properties=cl.command_queue_properties.PROFILING_ENABLE)
 
-
 if False:
     a_height = 4096
     #a_height = 1024
