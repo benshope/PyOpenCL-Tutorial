@@ -23,25 +23,6 @@ kernel = """__kernel void generate_sin(__global float2* a)
     a[id].y = native_sin(x);
 }"""
 
-def initialize():
-    platform = cl.get_platforms()[0]  # Use the first vendor's OpenCL implementation installed on this machine
-    context = cl.Context(properties=[(cl.context_properties.PLATFORM, platform)] + get_gl_sharing_context_properties())
-    glClearColor(1, 1, 1, 1)  # Set the background color to white
-    glColor(0, 0, 1)  # Set the foreground color to blue
-    vertex_buffer = glGenBuffers(1)  # Generate the OpenGL Buffer
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer) # Bind the vertex buffer to a target
-    rawGlBufferData(GL_ARRAY_BUFFER, num_points * 2 * 4, None, GL_STATIC_DRAW) # Allocate memory for the buffer
-    glEnableClientState(GL_VERTEX_ARRAY)  # The vertex array is enabled for writing and used during rendering when glDrawArrays is called
-    glVertexPointer(2, GL_FLOAT, 0, None)  # Define an array of vertex data (size, type, stride, pointer)
-    cl_buffer = cl.GLBuffer(context, cl.mem_flags.READ_WRITE, int(vertex_buffer))  #  An OpenCL buffer object from an OpenGL buffer object (context, flags, GL buffer)
-    prog = cl.Program(context, kernel).build()
-    queue = cl.CommandQueue(context)
-    cl.enqueue_acquire_gl_objects(queue, [cl_buffer])
-    prog.generate_sin(queue, (num_points,), None, cl_buffer)
-    cl.enqueue_release_gl_objects(queue, [cl_buffer])
-    queue.finish()
-    glFlush()
-
 def display():
     glClear(GL_COLOR_BUFFER_BIT)
     glDrawArrays(GL_LINE_STRIP, 0, num_points)
@@ -53,12 +34,30 @@ def reshape(width, height):
     glLoadIdentity()
     glMatrixMode(GL_MODELVIEW)
 
-if __name__ == '__main__':
-    glutInit(sys.argv)
-    glutInitWindowSize(800, 160)
-    glutInitWindowPosition(0, 0)
-    glutCreateWindow('OpenCL/OpenGL Interop Tutorial: Sin Generator')
-    glutDisplayFunc(display)
-    glutReshapeFunc(reshape)
-    initialize()
-    glutMainLoop()
+
+glutInit(sys.argv)
+glutInitWindowSize(800, 600)
+glutInitWindowPosition(0, 0)
+glutCreateWindow('OpenCL/OpenGL Interop Tutorial: Sin Generator')
+glutDisplayFunc(display)
+glutReshapeFunc(reshape)
+
+platform = cl.get_platforms()[0]
+context = cl.Context(properties=[(cl.context_properties.PLATFORM, platform)] + get_gl_sharing_context_properties())
+glClearColor(1, 1, 1, 1)  # Set the background color to white
+glColor(0, 0, 1)  # Set the foreground color to blue
+vertex_buffer = glGenBuffers(1)  # Generate the OpenGL Buffer
+glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer) # Bind the vertex buffer to a target
+rawGlBufferData(GL_ARRAY_BUFFER, num_points * 2 * 4, None, GL_STATIC_DRAW) # Allocate memory for the buffer
+glEnableClientState(GL_VERTEX_ARRAY)  # The vertex array is enabled for writing and used during rendering when glDrawArrays is called
+glVertexPointer(2, GL_FLOAT, 0, None)  # Define an array of vertex data (size, type, stride, pointer)
+cl_buffer = cl.GLBuffer(context, cl.mem_flags.READ_WRITE, int(vertex_buffer))  #  An OpenCL buffer object from an OpenGL buffer object (context, flags, GL buffer)
+prog = cl.Program(context, kernel).build()
+queue = cl.CommandQueue(context)
+cl.enqueue_acquire_gl_objects(queue, [cl_buffer])
+prog.generate_sin(queue, (num_points,), None, cl_buffer)
+cl.enqueue_release_gl_objects(queue, [cl_buffer])
+queue.finish()
+glFlush()
+
+glutMainLoop()
