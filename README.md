@@ -1,6 +1,6 @@
 # PyOpenCL Inline Comments Tutorial
 
-This is an introduction to parallel computation with Python and OpenCL.  The tutorial is composed of a numbered series of PyOpenCL programs with extensive inline comments.
+Welcome to an introduction to parallel computation with Python and OpenCL.  This tutorial is composed of a numbered series of PyOpenCL scripts, each with extensive inline comments.
 
 ## About The Comments
 
@@ -10,7 +10,7 @@ I have tried to write the code and the comments in a way that they could be sepa
 
 ## About The Tutorial
 
-I am writing this tutorial because PyOpenCL is a tool that is worth learning.  Python allows exceptional clarity-of-expression while OpenCL provides access to all the power modern hardware can deliver.  	PyOpenCL is a double-bladed lightsaber in a world full of butter knives.
+PyOpenCL is a tool that is worth learning.  Python allows exceptional clarity-of-expression while OpenCL provides access to all the power modern hardware can deliver.  Together these two languages are like a double-bladed lightsaber in a world full of butter knives.
 
 # Index
 
