@@ -27,24 +27,16 @@ def display():
     glDrawArrays(GL_LINE_STRIP, 0, num_points)
     glFlush()
 
-def reshape(width, height):
-    glViewport(0, 0, width, height)
-    glMatrixMode(GL_PROJECTION)
-    glLoadIdentity()
-    glMatrixMode(GL_MODELVIEW)
-
 
 glutInit()
 glutInitWindowSize(800, 600)
-glutInitWindowPosition(0, 0)
-glutCreateWindow('OpenCL/OpenGL Interop Tutorial: Sin Generator')
+glutCreateWindow('OpenCL/OpenGL Interop')
 glutDisplayFunc(display)
-glutReshapeFunc(reshape)
 
 platform = cl.get_platforms()[0]
 context = cl.Context(properties=[(cl.context_properties.PLATFORM, platform)] + get_gl_sharing_context_properties())
 glClearColor(1, 1, 1, 1)  # Set the background color to white
-glColor(0, 0, 1)  # Set the foreground color to blue
+glColor(0, 0, 0)  # Set the foreground color to black
 vertex_buffer = glGenBuffers(1)  # Generate the OpenGL Buffer
 glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer) # Bind the vertex buffer to a target
 rawGlBufferData(GL_ARRAY_BUFFER, num_points * 2 * 4, None, GL_STATIC_DRAW) # Allocate memory for the buffer
