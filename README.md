@@ -1,12 +1,12 @@
 # PyOpenCL Inline Comments Tutorial
 
-This tutorial is an introduction to parallel programming with Python and OpenCL.  The lessons in this tutorial are numbered PyOpenCL scripts with extensive inline comments.
+This tutorial is an introduction to parallel programming with Python and OpenCL.  The lessons in the tutorial are numbered PyOpenCL scripts with extensive inline comments.
 
 ### About The Comments
 
-This tutorial is an expiriment in code education.  The idea is that commenting each line will force the author to slow down and use plain english to explain every detail in a way that a diligent reader can understand.
+This tutorial is an expiriment in code education. The idea is that commenting each line will force the author to slow down and use plain english to explain every detail in a way that a diligent reader can understand.
 
-I have tried to write the code and the comments in a way that they could be separated and each one would still tell the complete story of what is going on.  With two sources of information, hopefully readers will seldom have to break focus and look something up.
+I have tried to write the code and the comments in a way that they could be separated and each one would still tell the complete story of what is going on. With two sources of information, hopefully readers will seldom have to break focus and look something up.
 
 ### About The Tutorial
 
@@ -14,6 +14,6 @@ PyOpenCL is a tool that is worth learning.  Python allows exceptional clarity-of
 
 # Index
 
-- 01 Introspection - Find out about your computer's OpenCL situation
-- 02 Array Sum - Use OpenCL To Add Two Large Random Arrays
-- 03 Array Sum - Use OpenCL To Add Two Large Random Array (Using PyOpenCL Arrays)
+- 010 Introspection - Find out about your computer's OpenCL situation
+- 020 Array Sum - Use OpenCL To Add Two Large Random Arrays
+- 021 Array Sum - Use OpenCL To Add Two Large Random Array (Using PyOpenCL Arrays)
