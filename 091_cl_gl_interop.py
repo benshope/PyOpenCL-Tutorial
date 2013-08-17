@@ -1,5 +1,4 @@
 import pyopencl as cl
-mf = cl.mem_flags
 from pyopencl.tools import get_gl_sharing_context_properties
 from OpenGL.GL import *
 from OpenGL.raw.GL.VERSION.GL_1_5 import glBufferData as rawGlBufferData
@@ -37,11 +36,11 @@ context = cl.Context(properties=[(cl.context_properties.PLATFORM, platform)] + g
 
 vertex_buffer = glGenBuffers(1)  # Generate the OpenGL Buffer name
 glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer) # Bind the vertex buffer to a target
-rawGlBufferData(GL_ARRAY_BUFFER, num_points * 2 * 4, None, GL_DYNAMIC_DRAW) # XXX Allocate memory for the buffer
+rawGlBufferData(GL_ARRAY_BUFFER, num_points * 2 * 4, None, GL_DYNAMIC_DRAW) # Allocate memory for the buffer
 glEnableClientState(GL_VERTEX_ARRAY)  # The vertex array is enabled for client writing and used for rendering
-glVertexPointer(2, GL_FLOAT, 0, None)  # Define an array of vertex data (size, type, stride, pointer)
-cl_buffer = cl.GLBuffer(context, cl.mem_flags.READ_WRITE, int(vertex_buffer))
+glVertexPointer(2, GL_FLOAT, 0, None)  # Define an array of vertex data (size xyz, type, stride, pointer)
 
+cl_buffer = cl.GLBuffer(context, cl.mem_flags.READ_WRITE, int(vertex_buffer))
 program = cl.Program(context, kernel).build()
 queue = cl.CommandQueue(context)
 cl.enqueue_acquire_gl_objects(queue, [cl_buffer])
