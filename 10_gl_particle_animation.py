@@ -6,8 +6,8 @@ from pyopencl.tools import get_gl_sharing_context_properties
 from OpenGL.GL import * # OpenGL - GPU rendering interface
 from OpenGL.GLU import * # OpenGL tools (mipmaps, NURBS, perspective projection, shapes)
 from OpenGL.GLUT import * # OpenGL tool to make a visualization window
-import math # Simple number tools
-import numpy # Complicated number tools
+import math # Number tools
+import numpy # Number tools
 import sys # System tools (path, modules, maxint)
 
 width = 800
