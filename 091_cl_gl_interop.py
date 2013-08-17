@@ -9,7 +9,6 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 import math
 import numpy
-import sys
 
 num_points = 10000 # Number of data structures (vectors/vertices) describing points in 2D space.
 
@@ -35,7 +34,7 @@ def reshape(width, height):
     glMatrixMode(GL_MODELVIEW)
 
 
-glutInit(sys.argv)
+glutInit()
 glutInitWindowSize(800, 600)
 glutInitWindowPosition(0, 0)
 glutCreateWindow('OpenCL/OpenGL Interop Tutorial: Sin Generator')
