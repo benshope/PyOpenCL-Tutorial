@@ -36,6 +36,7 @@ platform = cl.get_platforms()[0]
 context = cl.Context(properties=[(cl.context_properties.PLATFORM, platform)] + get_gl_sharing_context_properties())
 
 vertex_buffer = glGenBuffers(1)  # Generate the OpenGL Buffer
+print vertex_buffer
 glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer) # Bind the vertex buffer to a target
 rawGlBufferData(GL_ARRAY_BUFFER, num_points * 2 * 4, None, GL_STATIC_DRAW) # XXX Allocate memory for the buffer
 glEnableClientState(GL_VERTEX_ARRAY)  # XXX The vertex array is enabled for writing and used during rendering when glDrawArrays is called
