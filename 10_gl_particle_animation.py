@@ -21,7 +21,27 @@ rotate = {'x': 0., 'y': 0., 'z': 0.}
 translate = {'x': 0., 'y': 0., 'z': 0.}
 initial_translate = {'x': 0., 'y': 0., 'z': -2.5}
 
-# Create buffer of initial positions
+def glut_window():
+    glutInit(sys.argv)
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
+    glutInitWindowSize(width, height)
+    glutInitWindowPosition(0, 0)
+    window = glutCreateWindow("Particle Simulation")
+
+    glutDisplayFunc(on_draw)  # Called by GLUT every frame
+    glutKeyboardFunc(on_key)
+    glutMouseFunc(on_click)
+    glutMotionFunc(on_mouse_move)
+    glutTimerFunc(30, on_timer, 30)  # Call draw every 30 ms
+
+    glViewport(0, 0, width, height)
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+    gluPerspective(60., width / float(height), .1, 1000.)
+    glMatrixMode(GL_MODELVIEW)
+
+    return(window)
+
 def particle_start_values(num_particles):
     """Initialize position, color and velocity arrays we also make Vertex
     Buffer Objects for the position and color arrays"""
@@ -53,10 +73,8 @@ def particle_start_values(num_particles):
 
     return (pos_vbo, col_vbo, vel)
     
-
-# GL callback functions
-def timer(t):
-    glutTimerFunc(t, timer, t)
+def on_timer(t):
+    glutTimerFunc(t, on_timer, t)
     glutPostRedisplay()
 
 def on_key(*args):
@@ -74,11 +92,24 @@ def on_mouse_move(x, y):
     mouse_old['x'] = x
     mouse_old['y'] = y
 
-def draw():
+def on_draw():
     """Render the particles"""        
     # Update or particle positions by calling the OpenCL kernel
-    execute(10) 
+    cl.enqueue_acquire_gl_objects(queue, gl_objects)
+
+    global_size = (num_particles,)
+    local_size = None
+
+    kernelargs = (pos_cl, col_cl, vel_cl, pos_gen_cl, vel_gen_cl, numpy.float32(time_step))
+
+    for i in xrange(0, 10):
+        program.particle_fountain(queue, global_size, local_size, *(kernelargs))
+
+    cl.enqueue_release_gl_objects(queue, gl_objects)
+    
+    queue.finish()
     glFlush()
+
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glMatrixMode(GL_MODELVIEW)
@@ -91,56 +122,6 @@ def draw():
     glTranslatef(translate['x'], translate['y'], translate['z'])
     
     # Render the particles
-    render()
-
-    glutSwapBuffers()
-
-def glut_setup():
-    glutInit(sys.argv)
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
-    glutInitWindowSize(width, height)
-    glutInitWindowPosition(0, 0)
-    window = glutCreateWindow("Particle Simulation")
-
-    glutDisplayFunc(draw)  # Called by GLUT every frame
-    glutKeyboardFunc(on_key)
-    glutMouseFunc(on_click)
-    glutMotionFunc(on_mouse_move)
-    glutTimerFunc(30, timer, 30)  # Call draw every 30 ms
-    return(window)
-
-def gl_setup():
-    # Set up the OpenGL scene
-    glViewport(0, 0, width, height)
-    glMatrixMode(GL_PROJECTION)
-    glLoadIdentity()
-    gluPerspective(60., width / float(height), .1, 1000.)
-    glMatrixMode(GL_MODELVIEW)
-
-window = glut_setup()
-
-gl_setup()
-
-
-# Set up initial conditions
-(pos_vbo, col_vbo, vel) = particle_start_values(num_particles)
-
-
-def execute(sub_intervals):
-    cl.enqueue_acquire_gl_objects(queue, gl_objects)
-
-    global_size = (num_particles,)
-    local_size = None
-
-    kernelargs = (pos_cl, col_cl, vel_cl, pos_gen_cl, vel_gen_cl, numpy.float32(time_step))
-
-    for i in xrange(0, sub_intervals):
-        program.particle_fountain(queue, global_size, local_size, *(kernelargs))
-
-    cl.enqueue_release_gl_objects(queue, gl_objects)
-    queue.finish()
-
-def render():
     glEnable(GL_POINT_SMOOTH)
     glPointSize(2)
     glEnable(GL_BLEND)
@@ -163,9 +144,15 @@ def render():
 
     glDisable(GL_BLEND)
 
-platforms = cl.get_platforms()
+    glutSwapBuffers()
+
+window = glut_window()
+
+(pos_vbo, col_vbo, vel) = particle_start_values(num_particles)
+
+platform = cl.get_platforms()[0]
 context = cl.Context(properties=[
-    (cl.context_properties.PLATFORM, platforms[0])]
+    (cl.context_properties.PLATFORM, platform)]
     + get_gl_sharing_context_properties(), devices=None)  
 queue = cl.CommandQueue(context)
 
