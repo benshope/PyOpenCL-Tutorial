@@ -1,6 +1,6 @@
 # PyOpenCL Inline Comments Tutorial
 
-Welcome to an introduction to parallel computation with Python and OpenCL.  This tutorial is composed of a numbered series of PyOpenCL scripts - each with extensive inline comments.
+This tutorial is an introduction to parallel programming with Python and OpenCL.  The lessons in this tutorial are numbered PyOpenCL scripts with extensive inline comments.
 
 ### About The Comments
 
