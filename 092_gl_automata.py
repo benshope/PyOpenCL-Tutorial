@@ -14,6 +14,7 @@ import sys
 num_points = 10000
 width = 800
 height = 200
+offset = 0
 
 kernel = """__kernel void generate_sin(__global float2* a, float offset)
 {
@@ -21,7 +22,7 @@ kernel = """__kernel void generate_sin(__global float2* a, float offset)
     int global_size = get_global_size(0);
     float r = (float)id / (float)global_size;
     float x = r * 16.0f * 3.1415f;
-    a[id].x = r * 2.0f - 1.0f;
+    a[id].x = r * 2.0f - 1.0f + offset;
     a[id].y = native_sin(x);
 }"""
 
@@ -50,7 +51,7 @@ def on_timer(t):
 
 def on_draw():
     cl.enqueue_acquire_gl_objects(queue, [cl_buffer])
-    program.generate_sin(queue, (num_points,), None, cl_buffer, numpy.float32(0))
+    program.generate_sin(queue, (num_points,), None, cl_buffer, numpy.float32(offset))
     cl.enqueue_release_gl_objects(queue, [cl_buffer])
     queue.finish()
     glFlush()
@@ -58,6 +59,7 @@ def on_draw():
     glClear(GL_COLOR_BUFFER_BIT)
     glDrawArrays(GL_LINE_STRIP, 0, num_points)
     glFlush()
+    offset += 1
 
 
 window = glut_window()
@@ -70,8 +72,8 @@ glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer) # Bind the vertex buffer to a targe
 rawGlBufferData(GL_ARRAY_BUFFER, num_points * 2 * 4, None, GL_DYNAMIC_DRAW) # Allocate memory for the buffer
 glEnableClientState(GL_VERTEX_ARRAY)  # The vertex array is enabled for client writing and used for rendering
 glVertexPointer(2, GL_FLOAT, 0, None)  # Define an array of vertex data (size xyz, type, stride, pointer)
-
 cl_buffer = cl.GLBuffer(context, cl.mem_flags.READ_WRITE, int(vertex_buffer))
+
 program = cl.Program(context, kernel).build()
 queue = cl.CommandQueue(context)
 
