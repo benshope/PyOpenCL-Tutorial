@@ -42,7 +42,7 @@ def glut_window():
 
     return(window)
 
-def particle_start_values(num_particles):
+def particle_start_buffers(num_particles):
     """Initialize position, color and velocity arrays we also make Vertex
     Buffer Objects for the position and color arrays"""
 
@@ -149,7 +149,7 @@ def on_draw():
     glutSwapBuffers()
 
 window = glut_window()
-(pos_vbo, col_vbo, vel) = particle_start_values(num_particles)
+(pos_vbo, col_vbo, vel) = particle_start_buffers(num_particles)
 
 platform = cl.get_platforms()[0]
 context = cl.Context(properties=[(cl.context_properties.PLATFORM, platform)] + get_gl_sharing_context_properties(), devices=None)  

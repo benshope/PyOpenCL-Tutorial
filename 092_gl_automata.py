@@ -12,7 +12,7 @@ import sys # System tools (path, modules, maxint)
 
 width = 800
 height = 600
-num_particles = 900000
+seed = 900000
 time_step = .001
 
 mouse_down = False
@@ -42,18 +42,18 @@ def glut_window():
 
     return(window)
 
-def particle_start_values(num_particles):
+def particle_start_buffers(seed):
     """Initialize position, color and velocity arrays we also make Vertex
     Buffer Objects for the position and color arrays"""
 
-    pos = numpy.ndarray((num_particles, 4), dtype=numpy.float32)
-    col = numpy.ndarray((num_particles, 4), dtype=numpy.float32)
-    vel = numpy.ndarray((num_particles, 4), dtype=numpy.float32)
+    pos = numpy.ndarray((seed, 4), dtype=numpy.float32)
+    col = numpy.ndarray((seed, 4), dtype=numpy.float32)
+    vel = numpy.ndarray((seed, 4), dtype=numpy.float32)
 
-    pos[:,0] = numpy.sin(numpy.arange(0., num_particles) * 2.001 * numpy.pi / num_particles) 
-    pos[:,0] *= numpy.random.random_sample((num_particles,)) / 3. + .2
-    pos[:,1] = numpy.cos(numpy.arange(0., num_particles) * 2.001 * numpy.pi / num_particles) 
-    pos[:,1] *= numpy.random.random_sample((num_particles,)) / 3. + .2
+    pos[:,0] = numpy.sin(numpy.arange(0., seed) * 2.001 * numpy.pi / seed) 
+    pos[:,0] *= numpy.random.random_sample((seed,)) / 3. + .2
+    pos[:,1] = numpy.cos(numpy.arange(0., seed) * 2.001 * numpy.pi / seed) 
+    pos[:,1] *= numpy.random.random_sample((seed,)) / 3. + .2
     pos[:,2] = 0.
     pos[:,3] = 1.
 
@@ -62,7 +62,7 @@ def particle_start_values(num_particles):
     vel[:,0] = pos[:,0] * 2.
     vel[:,1] = pos[:,1] * 2.
     vel[:,2] = 3.
-    vel[:,3] = numpy.random.random_sample((num_particles, ))
+    vel[:,3] = numpy.random.random_sample((seed, ))
     
     #create the Vertex Buffer Objects
     from OpenGL.arrays import vbo 
@@ -99,7 +99,7 @@ def on_draw():
     # Update or particle positions by calling the OpenCL kernel
     cl.enqueue_acquire_gl_objects(queue, gl_objects)
 
-    global_size = (num_particles,)
+    global_size = (seed,)
     local_size = None
 
     kernelargs = (pos_cl, col_cl, vel_cl, pos_gen_cl, vel_gen_cl, numpy.float32(time_step))
@@ -139,7 +139,7 @@ def on_draw():
     glEnableClientState(GL_VERTEX_ARRAY)
     glEnableClientState(GL_COLOR_ARRAY)
     #draw the VBOs
-    glDrawArrays(GL_POINTS, 0, num_particles)
+    glDrawArrays(GL_POINTS, 0, seed)
 
     glDisableClientState(GL_COLOR_ARRAY)
     glDisableClientState(GL_VERTEX_ARRAY)
@@ -149,7 +149,7 @@ def on_draw():
     glutSwapBuffers()
 
 window = glut_window()
-(pos_vbo, col_vbo, vel) = particle_start_values(num_particles)
+(pos_vbo, col_vbo, vel) = particle_start_buffers(seed)
 
 platform = cl.get_platforms()[0]
 context = cl.Context(properties=[(cl.context_properties.PLATFORM, platform)] + get_gl_sharing_context_properties(), devices=None)  
