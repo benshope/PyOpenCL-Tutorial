@@ -6,6 +6,7 @@ from pyopencl.tools import get_gl_sharing_context_properties
 from OpenGL.GL import * # OpenGL - GPU rendering interface
 from OpenGL.GLU import * # OpenGL tools (mipmaps, NURBS, perspective projection, shapes)
 from OpenGL.GLUT import * # OpenGL tool to make a visualization window
+from OpenGL.arrays import vbo 
 import math # Number tools
 import numpy # Number tools
 import sys # System tools (path, modules, maxint)
@@ -65,15 +66,12 @@ def particle_start_buffers(num_particles):
     vel[:,3] = numpy.random.random_sample((num_particles, ))
     
     #create the Vertex Buffer Objects
-    from OpenGL.arrays import vbo 
     pos_vbo = vbo.VBO(data=pos, usage=GL_DYNAMIC_DRAW, target=GL_ARRAY_BUFFER)
     pos_vbo.bind()
     col_vbo = vbo.VBO(data=col, usage=GL_DYNAMIC_DRAW, target=GL_ARRAY_BUFFER)
     col_vbo.bind()
 
     return (pos_vbo, col_vbo, vel)
-
-# OpenGL Callback Functions
 
 def on_timer(t):
     glutTimerFunc(t, on_timer, t)
@@ -152,11 +150,19 @@ window = glut_window()
 (pos_vbo, col_vbo, vel) = particle_start_buffers(num_particles)
 
 platform = cl.get_platforms()[0]
-context = cl.Context(properties=[(cl.context_properties.PLATFORM, platform)] + get_gl_sharing_context_properties(), devices=None)  
+context = cl.Context(properties=[(cl.context_properties.PLATFORM, platform)] + get_gl_sharing_context_properties())  
 queue = cl.CommandQueue(context)
 
-kernel = """
-__kernel void particle_fountain(__global float4* pos, __global float4* color, __global float4* vel, __global float4* pos_gen, __global float4* vel_gen, float time_step)
+# Set up vertex buffer objects and share them with OpenCL as GLBuffers
+pos_cl = cl.GLBuffer(context, mf.READ_WRITE, int(pos_vbo.buffers[0]))
+col_cl = cl.GLBuffer(context, mf.READ_WRITE, int(col_vbo.buffers[0]))
+gl_objects = [pos_cl, col_cl]
+# Pure OpenCL arrays
+vel_cl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=vel)
+pos_gen_cl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=pos_vbo.data)
+vel_gen_cl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=vel)
+
+kernel = """__kernel void particle_fountain(__global float4* pos, __global float4* color, __global float4* vel, __global float4* pos_gen, __global float4* vel_gen, float time_step)
 {
     //get our index in the array
     unsigned int i = get_global_id(0);
@@ -197,22 +203,7 @@ __kernel void particle_fountain(__global float4* pos, __global float4* color, __
     color[i].w = life;
 
 }"""
-
 program = cl.Program(context, kernel).build()
 
-# Set up vertex buffer objects and share them with OpenCL as GLBuffers
-
-pos_vbo.bind()
-col_vbo.bind()
-pos_cl = cl.GLBuffer(context, mf.READ_WRITE, int(pos_vbo.buffers[0]))
-col_cl = cl.GLBuffer(context, mf.READ_WRITE, int(col_vbo.buffers[0]))
-gl_objects = [pos_cl, col_cl]
-
-# Pure OpenCL arrays
-vel_cl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=vel)
-pos_gen_cl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=pos_vbo.data)
-vel_gen_cl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=vel)
-
 queue.finish()
-
 glutMainLoop()
