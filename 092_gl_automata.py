@@ -1,218 +1,59 @@
-# OpenCL + OpenGL program - visualization of particles with gravity
+# Visualize a sine wave
 
-import pyopencl as cl # OpenCL - GPU computing interface
-mf = cl.mem_flags
+import pyopencl as cl
 from pyopencl.tools import get_gl_sharing_context_properties
-from OpenGL.GL import * # OpenGL - GPU rendering interface
-from OpenGL.GLU import * # OpenGL tools (mipmaps, NURBS, perspective projection, shapes)
-from OpenGL.GLUT import * # OpenGL tool to make a visualization window
-import math # Number tools
-import numpy # Number tools
-import sys # System tools (path, modules, maxint)
+from OpenGL.GL import *
+from OpenGL.raw.GL.VERSION.GL_1_5 import glBufferData as rawGlBufferData
+from OpenGL.GLUT import *
+import numpy
 
-width = 800
-height = 600
-seed = 900000
-time_step = .001
+num_points = 10000
 
-mouse_down = False
-mouse_old = {'x': 0., 'y': 0.}
-rotate = {'x': 0., 'y': 0., 'z': 0.}
-translate = {'x': 0., 'y': 0., 'z': 0.}
-initial_translate = {'x': 0., 'y': 0., 'z': -2.5}
-
-def glut_window():
-    glutInit(sys.argv)
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
-    glutInitWindowSize(width, height)
-    glutInitWindowPosition(0, 0)
-    window = glutCreateWindow("Particle Simulation")
-
-    glutDisplayFunc(on_draw)  # Called by GLUT every frame
-    glutKeyboardFunc(on_key)
-    glutMouseFunc(on_click)
-    glutMotionFunc(on_mouse_move)
-    glutTimerFunc(30, on_timer, 30)  # Call draw every 30 ms
-
-    glViewport(0, 0, width, height)
-    glMatrixMode(GL_PROJECTION)
-    glLoadIdentity()
-    gluPerspective(60., width / float(height), .1, 1000.)
-    glMatrixMode(GL_MODELVIEW)
-
-    return(window)
-
-def particle_start_buffers(seed):
-    """Initialize position, color and velocity arrays we also make Vertex
-    Buffer Objects for the position and color arrays"""
-
-    pos = numpy.ndarray((seed, 4), dtype=numpy.float32)
-    col = numpy.ndarray((seed, 4), dtype=numpy.float32)
-    vel = numpy.ndarray((seed, 4), dtype=numpy.float32)
-
-    pos[:,0] = numpy.sin(numpy.arange(0., seed) * 2.001 * numpy.pi / seed) 
-    pos[:,0] *= numpy.random.random_sample((seed,)) / 3. + .2
-    pos[:,1] = numpy.cos(numpy.arange(0., seed) * 2.001 * numpy.pi / seed) 
-    pos[:,1] *= numpy.random.random_sample((seed,)) / 3. + .2
-    pos[:,2] = 0.
-    pos[:,3] = 1.
-
-    col[:,:] = [1.,1.,1.,1.] # White particles
-
-    vel[:,0] = pos[:,0] * 2.
-    vel[:,1] = pos[:,1] * 2.
-    vel[:,2] = 3.
-    vel[:,3] = numpy.random.random_sample((seed, ))
-    
-    #create the Vertex Buffer Objects
-    from OpenGL.arrays import vbo 
-    pos_vbo = vbo.VBO(data=pos, usage=GL_DYNAMIC_DRAW, target=GL_ARRAY_BUFFER)
-    pos_vbo.bind()
-    col_vbo = vbo.VBO(data=col, usage=GL_DYNAMIC_DRAW, target=GL_ARRAY_BUFFER)
-    col_vbo.bind()
-
-    return (pos_vbo, col_vbo, vel)
-
-# OpenGL Callback Functions
+kernel = """__kernel void generate_sin(__global float2* a)
+{
+    int id = get_global_id(0);
+    int global_size = get_global_size(0);
+    float r = (float)id / (float)global_size;
+    float x = r * 16.0f * 3.1415f;
+    a[id].x = r * 2.0f - 1.0f;
+    a[id].y = native_sin(x);
+}"""
 
 def on_timer(t):
     glutTimerFunc(t, on_timer, t)
     glutPostRedisplay()
 
-def on_key(*args):
-    if args[0] == '\033' or args[0] == 'q':
-        sys.exit()
-
-def on_click(button, state, x, y):
-    mouse_old['x'] = x
-    mouse_old['y'] = y
-
-def on_mouse_move(x, y):
-    rotate['x'] += (y - mouse_old['y']) * .2
-    rotate['y'] += (x - mouse_old['x']) * .2
-
-    mouse_old['x'] = x
-    mouse_old['y'] = y
-
 def on_draw():
-    """Render the particles"""        
-    # Update or particle positions by calling the OpenCL kernel
-    cl.enqueue_acquire_gl_objects(queue, gl_objects)
-
-    global_size = (seed,)
-    local_size = None
-
-    kernelargs = (pos_cl, col_cl, vel_cl, pos_gen_cl, vel_gen_cl, numpy.float32(time_step))
-
-    for i in xrange(0, 10):
-        program.particle_fountain(queue, global_size, local_size, *(kernelargs))
-
-    cl.enqueue_release_gl_objects(queue, gl_objects)
-    
-    queue.finish()
+    glClear(GL_COLOR_BUFFER_BIT)
+    glDrawArrays(GL_LINE_STRIP, 0, num_points)
     glFlush()
 
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    glMatrixMode(GL_MODELVIEW)
-    glLoadIdentity()
-
-    # Handle mouse transformations
-    glTranslatef(initial_translate['x'], initial_translate['y'], initial_translate['z'])
-    glRotatef(rotate['x'], 1, 0, 0)
-    glRotatef(rotate['y'], 0, 1, 0) #we switched around the axis so make this rotate_z
-    glTranslatef(translate['x'], translate['y'], translate['z'])
-    
-    # Render the particles
-    glEnable(GL_POINT_SMOOTH)
-    glPointSize(2)
-    glEnable(GL_BLEND)
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-
-    #setup the VBOs
-    col_vbo.bind()
-    glColorPointer(4, GL_FLOAT, 0, col_vbo)
-
-    pos_vbo.bind()
-    glVertexPointer(4, GL_FLOAT, 0, pos_vbo)
-
-    glEnableClientState(GL_VERTEX_ARRAY)
-    glEnableClientState(GL_COLOR_ARRAY)
-    #draw the VBOs
-    glDrawArrays(GL_POINTS, 0, seed)
-
-    glDisableClientState(GL_COLOR_ARRAY)
-    glDisableClientState(GL_VERTEX_ARRAY)
-
-    glDisable(GL_BLEND)
-
-    glutSwapBuffers()
-
-window = glut_window()
-(pos_vbo, col_vbo, vel) = particle_start_buffers(seed)
+glutInit()
+glutInitWindowSize(800, 200)
+glutInitWindowPosition(0, 0)
+glutCreateWindow('OpenCL/OpenGL Interop')
+glutDisplayFunc(on_draw)
+glutTimerFunc(30, on_timer, 30)
+glClearColor(1, 1, 1, 1)  # Set the background color to white
+glColor(0, 0, 0)  # Set the foreground color to black
 
 platform = cl.get_platforms()[0]
-context = cl.Context(properties=[(cl.context_properties.PLATFORM, platform)] + get_gl_sharing_context_properties(), devices=None)  
-queue = cl.CommandQueue(context)
+context = cl.Context(properties=[(cl.context_properties.PLATFORM, platform)] + get_gl_sharing_context_properties())
 
-kernel = """
-__kernel void particle_fountain(__global float4* pos, __global float4* color, __global float4* vel, __global float4* pos_gen, __global float4* vel_gen, float time_step)
-{
-    //get our index in the array
-    unsigned int i = get_global_id(0);
-    //copy position and velocity for this iteration to a local variable
-    //note: if we were doing many more calculations we would want to have opencl
-    //copy to a local memory array to speed up memory access (this will be the subject of a later tutorial)
-    float4 p = pos[i];
-    float4 v = vel[i];
+vertex_buffer = glGenBuffers(1)  # Generate the OpenGL Buffer name
+glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer) # Bind the vertex buffer to a target
+rawGlBufferData(GL_ARRAY_BUFFER, num_points * 2 * 4, None, GL_DYNAMIC_DRAW) # Allocate memory for the buffer
+glEnableClientState(GL_VERTEX_ARRAY)  # The vertex array is enabled for client writing and used for rendering
+glVertexPointer(2, GL_FLOAT, 0, None)  # Define an array of vertex data (size xyz, type, stride, pointer)
 
-    //we've stored the life in the fourth component of our velocity array
-    float life = vel[i].w;
-    //decrease the life by the time step (this value could be adjusted to lengthen or shorten particle life
-    life -= time_step;
-    //if the life is 0 or less we reset the particle's values back to the original values and set life to 1
-    if(life <= 0.f)
-    {
-        p = pos_gen[i];
-        v = vel_gen[i];
-        life = 1.0f;    
-    }
-
-    //we use a first order euler method to integrate the velocity and position (i'll expand on this in another tutorial)
-    //update the velocity to be affected by "gravity" in the z direction
-    v.z -= 9.8f*time_step;
-    //update the position with the new velocity
-    p.x += v.x*time_step;
-    p.y += v.y*time_step;
-    p.z += v.z*time_step;
-    //store the updated life in the velocity array
-    v.w = life;
-
-    //update the arrays with our newly computed values
-    pos[i] = p;
-    vel[i] = v;
-
-    //you can manipulate the color based on properties of the system
-    //here we adjust the alpha
-    color[i].w = life;
-
-}"""
-
+cl_buffer = cl.GLBuffer(context, cl.mem_flags.READ_WRITE, int(vertex_buffer))
 program = cl.Program(context, kernel).build()
-
-# Set up vertex buffer objects and share them with OpenCL as GLBuffers
-
-pos_vbo.bind()
-col_vbo.bind()
-pos_cl = cl.GLBuffer(context, mf.READ_WRITE, int(pos_vbo.buffers[0]))
-col_cl = cl.GLBuffer(context, mf.READ_WRITE, int(col_vbo.buffers[0]))
-gl_objects = [pos_cl, col_cl]
-
-# Pure OpenCL arrays
-vel_cl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=vel)
-pos_gen_cl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=pos_vbo.data)
-vel_gen_cl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=vel)
-
+queue = cl.CommandQueue(context)
+cl.enqueue_acquire_gl_objects(queue, [cl_buffer])
+program.generate_sin(queue, (num_points,), None, cl_buffer)
+cl.enqueue_release_gl_objects(queue, [cl_buffer])
 queue.finish()
+glFlush()
 
 glutMainLoop()

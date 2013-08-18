@@ -19,7 +19,7 @@ kernel = """__kernel void generate_sin(__global float2* a)
     a[id].y = native_sin(x);
 }"""
 
-def on_display():
+def on_draw():
     glClear(GL_COLOR_BUFFER_BIT)
     glDrawArrays(GL_LINE_STRIP, 0, num_points)
     glFlush()
@@ -34,7 +34,7 @@ glutInit()
 glutInitWindowSize(800, 200)
 glutInitWindowPosition(0, 0)
 glutCreateWindow('OpenCL/OpenGL Interop')
-glutDisplayFunc(on_display)
+glutDisplayFunc(on_draw)
 glutReshapeFunc(on_reshape)
 glClearColor(1, 1, 1, 1)  # Set the background color to white
 glColor(0, 0, 0)  # Set the foreground color to black
