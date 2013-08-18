@@ -1,11 +1,15 @@
 # Visualize a sine wave
 
 import pyopencl as cl
+mf = cl.mem_flags
 from pyopencl.tools import get_gl_sharing_context_properties
 from OpenGL.GL import *
 from OpenGL.raw.GL.VERSION.GL_1_5 import glBufferData as rawGlBufferData
+from OpenGL.GLU import *
 from OpenGL.GLUT import *
+import math
 import numpy
+import sys
 
 num_points = 10000
 
@@ -19,6 +23,28 @@ kernel = """__kernel void generate_sin(__global float2* a)
     a[id].y = native_sin(x);
 }"""
 
+
+def glut_window():
+    glutInit(sys.argv)
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
+    glutInitWindowSize(width, height)
+    glutInitWindowPosition(0, 0)
+    window = glutCreateWindow("Particle Simulation")
+
+    glutDisplayFunc(on_draw)  # Called by GLUT every frame
+    glutTimerFunc(30, on_timer, 30)  # Call draw every 30 ms
+
+    glClearColor(1, 1, 1, 1)  # Set the background color to white
+    glColor(0, 0, 0)  # Set the foreground color to black
+
+    glViewport(0, 0, width, height)
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+    gluPerspective(60., width / float(height), .1, 1000.)
+    glMatrixMode(GL_MODELVIEW)
+
+    return(window)
+
 def on_timer(t):
     glutTimerFunc(t, on_timer, t)
     glutPostRedisplay()
@@ -29,14 +55,7 @@ def on_draw():
     glFlush()
 
 
-glutInit()
-glutInitWindowSize(800, 200)
-glutInitWindowPosition(0, 0)
-glutCreateWindow('OpenCL/OpenGL Interop')
-glutDisplayFunc(on_draw)
-glutTimerFunc(30, on_timer, 30)
-glClearColor(1, 1, 1, 1)  # Set the background color to white
-glColor(0, 0, 0)  # Set the foreground color to black
+window = glut_window()
 
 platform = cl.get_platforms()[0]
 context = cl.Context(properties=[(cl.context_properties.PLATFORM, platform)] + get_gl_sharing_context_properties())
