@@ -13,7 +13,7 @@ import sys # System tools (path, modules, maxint)
 width = 800
 height = 600
 num_particles = 100000
-time_step = .01
+time_step = .005
 mouse_down = False
 mouse_old = {'x': 0., 'y': 0.}
 rotate = {'x': 0., 'y': 0., 'z': 0.}
@@ -111,7 +111,7 @@ def on_display():
     glEnable(GL_BLEND)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-    #setup the VBOs
+    # Set up the VBOs
     gl_color.bind()
     glColorPointer(4, GL_FLOAT, 0, gl_color)
     gl_position.bind()
@@ -119,7 +119,7 @@ def on_display():
     glEnableClientState(GL_VERTEX_ARRAY)
     glEnableClientState(GL_COLOR_ARRAY)
 
-    #draw the VBOs
+    # Draw the VBOs
     glDrawArrays(GL_POINTS, 0, num_particles)
 
     glDisableClientState(GL_COLOR_ARRAY)
@@ -137,26 +137,26 @@ platform = cl.get_platforms()[0]
 context = cl.Context(properties=[(cl.context_properties.PLATFORM, platform)] + get_gl_sharing_context_properties())  
 queue = cl.CommandQueue(context)
 
-cl_velocity = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np_velocity)
+cl_velocity = cl.Buffer(context, mf.COPY_HOST_PTR, hostbuf=np_velocity)
 cl_start_position = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np_position)
 cl_start_velocity = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np_velocity)
 
 cl_gl_position = cl.GLBuffer(context, mf.READ_WRITE, int(gl_position.buffers[0]))
 cl_gl_color = cl.GLBuffer(context, mf.READ_WRITE, int(gl_color.buffers[0]))
 
-kernel = """__kernel void particle_fountain(__global float4* cl_gl_position, 
-                                            __global float4* cl_gl_color, 
+kernel = """__kernel void particle_fountain(__global float4* position, 
+                                            __global float4* color, 
                                             __global float4* velocity, 
                                             __global float4* start_position, 
                                             __global float4* start_velocity, 
                                             float time_step)
 {
     unsigned int i = get_global_id(0);
-    float4 p = cl_gl_position[i];
+    float4 p = position[i];
     float4 v = velocity[i];
     float life = velocity[i].w;
     life -= time_step;
-    if(life <= 0.f)
+    if (life <= 0.f)
     {
         p = start_position[i];
         v = start_velocity[i];
@@ -169,10 +169,10 @@ kernel = """__kernel void particle_fountain(__global float4* cl_gl_position,
     p.z += v.z*time_step;
     v.w = life;
 
-    cl_gl_position[i] = p;
+    position[i] = p;
     velocity[i] = v;
 
-    cl_gl_color[i].w = life; /* Fade points as life decreases */
+    color[i].w = life; /* Fade points as life decreases */
 }"""
 program = cl.Program(context, kernel).build()
 
