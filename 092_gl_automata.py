@@ -7,7 +7,7 @@ from OpenGL.GL import *
 from OpenGL.raw.GL.VERSION.GL_1_5 import glBufferData as rawGlBufferData
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
-import math
+from OpenGL.arrays import vbo 
 import numpy
 import sys
 
@@ -21,7 +21,7 @@ def glut_window():
     glutInitWindowSize(800, 200)
     glutInitWindowPosition(0, 0)
     window = glutCreateWindow('OpenCL/OpenGL Interop')
-    glutDisplayFunc(on_draw)
+    glutDisplayFunc(on_display)
     glutTimerFunc(30, on_timer, 30)
     glClearColor(1, 1, 1, 1)  # Set the background color to white
     glColor(0, 0, 0)  # Set the foreground color to black
@@ -29,41 +29,54 @@ def glut_window():
     glViewport(0, 0, width, height)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    # gluPerspective(60., width / float(height), .1, 1000.)
     glMatrixMode(GL_MODELVIEW)
 
     return(window)
 
 def initial_buffer():
-    vertex_buffer = glGenBuffers(1)  # Generate the OpenGL Buffer name
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer) # Bind the vertex buffer to a target
+
+    numpy_array = numpy.ndarray((num_points, 2), dtype=numpy.float32)
+    numpy_array[:,:] = [0.,1.]
+    gl_buffer = vbo.VBO(data=numpy_array, usage=GL_DYNAMIC_DRAW, target=GL_ARRAY_BUFFER)
+    # gl_buffer.bind()
+
+    buffer_name = glGenBuffers(1)  # Generate the OpenGL Buffer name
+    glBindBuffer(GL_ARRAY_BUFFER, buffer_name) # Bind the vertex buffer to a target
     rawGlBufferData(GL_ARRAY_BUFFER, num_points * 2 * 4, None, GL_DYNAMIC_DRAW) # Allocate memory for the buffer
     glEnableClientState(GL_VERTEX_ARRAY)  # The vertex array is enabled for client writing and used for rendering
     glVertexPointer(2, GL_FLOAT, 0, None)  # Define an array of vertex data (size xyz, type, stride, pointer)
-    cl_buffer = cl.GLBuffer(context, cl.mem_flags.READ_WRITE, int(vertex_buffer))
-    return cl_buffer
+    cl_gl_buffer = cl.GLBuffer(context, cl.mem_flags.READ_WRITE, int(buffer_name))
+    return cl_gl_buffer
 
 def on_timer(t):
     glutTimerFunc(t, on_timer, t)
     glutPostRedisplay()
 
-def on_draw():
-    cl.enqueue_acquire_gl_objects(queue, [cl_buffer])
-    program.generate_sin(queue, (num_points,), None, cl_buffer, numpy.float32(offset))
-    cl.enqueue_release_gl_objects(queue, [cl_buffer])
+def on_display():
+    cl.enqueue_acquire_gl_objects(queue, [cl_gl_buffer])
+    program.generate_sin(queue, (num_points,), None, cl_gl_buffer, numpy.float32(offset))
+    cl.enqueue_release_gl_objects(queue, [cl_gl_buffer])
     queue.finish()
     glFlush()
 
     glClear(GL_COLOR_BUFFER_BIT)
-    glDrawArrays(GL_LINE_STRIP, 0, num_points)
-    glFlush()
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
+
+    # pos_vbo.bind()
+    # glVertexPointer(4, GL_FLOAT, 0, pos_vbo)
+    # glEnableClientState(GL_VERTEX_ARRAY)
+    glDrawArrays(GL_POINTS, 0, num_points)
+    # glDisableClientState(GL_VERTEX_ARRAY)
+    glutSwapBuffers()
+
 
 window = glut_window()
 platform = cl.get_platforms()[0]
 context = cl.Context(properties=[(cl.context_properties.PLATFORM, platform)] + get_gl_sharing_context_properties())
 queue = cl.CommandQueue(context)
 
-cl_buffer = initial_buffer()
+cl_gl_buffer = initial_buffer()
 
 kernel = """__kernel void generate_sin(__global float2* a, float offset)
 {
@@ -75,6 +88,5 @@ kernel = """__kernel void generate_sin(__global float2* a, float offset)
     a[id].y = native_sin(x) + offset;
 }"""
 program = cl.Program(context, kernel).build()
-
 
 glutMainLoop()

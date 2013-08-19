@@ -7,15 +7,13 @@ from OpenGL.GL import * # OpenGL - GPU rendering interface
 from OpenGL.GLU import * # OpenGL tools (mipmaps, NURBS, perspective projection, shapes)
 from OpenGL.GLUT import * # OpenGL tool to make a visualization window
 from OpenGL.arrays import vbo 
-import math # Number tools
 import numpy # Number tools
 import sys # System tools (path, modules, maxint)
 
 width = 800
 height = 600
-num_particles = 900000
-time_step = .001
-
+num_particles = 100000
+time_step = .01
 mouse_down = False
 mouse_old = {'x': 0., 'y': 0.}
 rotate = {'x': 0., 'y': 0., 'z': 0.}
@@ -29,17 +27,16 @@ def glut_window():
     glutInitWindowPosition(0, 0)
     window = glutCreateWindow("Particle Simulation")
 
-    glutDisplayFunc(on_draw)  # Called by GLUT every frame
+    glutDisplayFunc(on_display)  # Called by GLUT every frame
     glutKeyboardFunc(on_key)
     glutMouseFunc(on_click)
     glutMotionFunc(on_mouse_move)
-    glutTimerFunc(30, on_timer, 30)  # Call draw every 30 ms
+    glutTimerFunc(10, on_timer, 10)  # Call draw every 30 ms
 
     glViewport(0, 0, width, height)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     gluPerspective(60., width / float(height), .1, 1000.)
-    glMatrixMode(GL_MODELVIEW)
 
     return(window)
 
@@ -92,24 +89,15 @@ def on_mouse_move(x, y):
     mouse_old['x'] = x
     mouse_old['y'] = y
 
-def on_draw():
+def on_display():
     """Render the particles"""        
     # Update or particle positions by calling the OpenCL kernel
     cl.enqueue_acquire_gl_objects(queue, gl_objects)
-
-    global_size = (num_particles,)
-    local_size = None
-
     kernelargs = (pos_cl, col_cl, vel_cl, pos_gen_cl, vel_gen_cl, numpy.float32(time_step))
-
-    for i in xrange(0, 10):
-        program.particle_fountain(queue, global_size, local_size, *(kernelargs))
-
+    program.particle_fountain(queue, (num_particles,), None, *(kernelargs))
     cl.enqueue_release_gl_objects(queue, gl_objects)
-    
     queue.finish()
     glFlush()
-
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glMatrixMode(GL_MODELVIEW)
@@ -130,12 +118,11 @@ def on_draw():
     #setup the VBOs
     col_vbo.bind()
     glColorPointer(4, GL_FLOAT, 0, col_vbo)
-
     pos_vbo.bind()
     glVertexPointer(4, GL_FLOAT, 0, pos_vbo)
-
     glEnableClientState(GL_VERTEX_ARRAY)
     glEnableClientState(GL_COLOR_ARRAY)
+
     #draw the VBOs
     glDrawArrays(GL_POINTS, 0, num_particles)
 
@@ -147,6 +134,7 @@ def on_draw():
     glutSwapBuffers()
 
 window = glut_window()
+
 (pos_vbo, col_vbo, vel) = initial_buffers(num_particles)
 
 platform = cl.get_platforms()[0]
