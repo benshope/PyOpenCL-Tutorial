@@ -41,9 +41,6 @@ def glut_window():
     return(window)
 
 def initial_buffers(num_particles):
-    """Initialize position, color and velocity arrays we also make Vertex
-    Buffer Objects for the position and color arrays"""
-
     np_position = numpy.ndarray((num_particles, 4), dtype=numpy.float32)
     np_color = numpy.ndarray((num_particles, 4), dtype=numpy.float32)
     np_velocity = numpy.ndarray((num_particles, 4), dtype=numpy.float32)
@@ -62,13 +59,12 @@ def initial_buffers(num_particles):
     np_velocity[:,2] = 3.
     np_velocity[:,3] = numpy.random.random_sample((num_particles, ))
     
-    #create the Vertex Buffer Objects
     gl_position = vbo.VBO(data=np_position, usage=GL_DYNAMIC_DRAW, target=GL_ARRAY_BUFFER)
     gl_position.bind()
     gl_color = vbo.VBO(data=np_color, usage=GL_DYNAMIC_DRAW, target=GL_ARRAY_BUFFER)
     gl_color.bind()
 
-    return (gl_position, gl_color, np_velocity)
+    return (np_position, np_velocity, gl_position, gl_color)
 
 def on_timer(t):
     glutTimerFunc(t, on_timer, t)
@@ -93,7 +89,7 @@ def on_display():
     """Render the particles"""        
     # Update or particle positions by calling the OpenCL kernel
     cl.enqueue_acquire_gl_objects(queue, cl_gl_objects)
-    kernelargs = (cl_gl_position, cl_gl_color, vel_cl, pos_gen_cl, vel_gen_cl, numpy.float32(time_step))
+    kernelargs = (cl_gl_position, cl_gl_color, cl_velocity, cl_position_gen, cl_velocity_gen, numpy.float32(time_step))
     program.particle_fountain(queue, (num_particles,), None, *(kernelargs))
     cl.enqueue_release_gl_objects(queue, cl_gl_objects)
     queue.finish()
@@ -135,20 +131,19 @@ def on_display():
 
 window = glut_window()
 
-(gl_position, gl_color, np_velocity) = initial_buffers(num_particles)
+(np_position, np_velocity, gl_position, gl_color) = initial_buffers(num_particles)
 
 platform = cl.get_platforms()[0]
 context = cl.Context(properties=[(cl.context_properties.PLATFORM, platform)] + get_gl_sharing_context_properties())  
 queue = cl.CommandQueue(context)
 
-# Set up vertex buffer objects and share them with OpenCL as GLBuffers
+cl_velocity = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np_velocity)
+cl_position_gen = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np_position)
+cl_velocity_gen = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np_velocity)
+
 cl_gl_position = cl.GLBuffer(context, mf.READ_WRITE, int(gl_position.buffers[0]))
 cl_gl_color = cl.GLBuffer(context, mf.READ_WRITE, int(gl_color.buffers[0]))
 cl_gl_objects = [cl_gl_position, cl_gl_color]
-# Pure OpenCL arrays
-vel_cl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np_velocity)
-pos_gen_cl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=gl_position.data)
-vel_gen_cl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np_velocity)
 
 kernel = """__kernel void particle_fountain(__global float4* position, __global float4* color, __global float4* velocity, __global float4* position_gen, __global float4* vel_gen, float time_step)
 {
