@@ -44,31 +44,31 @@ def initial_buffers(num_particles):
     """Initialize position, color and velocity arrays we also make Vertex
     Buffer Objects for the position and color arrays"""
 
-    pos = numpy.ndarray((num_particles, 4), dtype=numpy.float32)
-    col = numpy.ndarray((num_particles, 4), dtype=numpy.float32)
-    vel = numpy.ndarray((num_particles, 4), dtype=numpy.float32)
+    np_position = numpy.ndarray((num_particles, 4), dtype=numpy.float32)
+    np_color = numpy.ndarray((num_particles, 4), dtype=numpy.float32)
+    np_velocity = numpy.ndarray((num_particles, 4), dtype=numpy.float32)
 
-    pos[:,0] = numpy.sin(numpy.arange(0., num_particles) * 2.001 * numpy.pi / num_particles) 
-    pos[:,0] *= numpy.random.random_sample((num_particles,)) / 3. + .2
-    pos[:,1] = numpy.cos(numpy.arange(0., num_particles) * 2.001 * numpy.pi / num_particles) 
-    pos[:,1] *= numpy.random.random_sample((num_particles,)) / 3. + .2
-    pos[:,2] = 0.
-    pos[:,3] = 1.
+    np_position[:,0] = numpy.sin(numpy.arange(0., num_particles) * 2.001 * numpy.pi / num_particles) 
+    np_position[:,0] *= numpy.random.random_sample((num_particles,)) / 3. + .2
+    np_position[:,1] = numpy.cos(numpy.arange(0., num_particles) * 2.001 * numpy.pi / num_particles) 
+    np_position[:,1] *= numpy.random.random_sample((num_particles,)) / 3. + .2
+    np_position[:,2] = 0.
+    np_position[:,3] = 1.
 
-    col[:,:] = [1.,1.,1.,1.] # White particles
+    np_color[:,:] = [1.,1.,1.,1.] # White particles
 
-    vel[:,0] = pos[:,0] * 2.
-    vel[:,1] = pos[:,1] * 2.
-    vel[:,2] = 3.
-    vel[:,3] = numpy.random.random_sample((num_particles, ))
+    np_velocity[:,0] = np_position[:,0] * 2.
+    np_velocity[:,1] = np_position[:,1] * 2.
+    np_velocity[:,2] = 3.
+    np_velocity[:,3] = numpy.random.random_sample((num_particles, ))
     
     #create the Vertex Buffer Objects
-    pos_vbo = vbo.VBO(data=pos, usage=GL_DYNAMIC_DRAW, target=GL_ARRAY_BUFFER)
-    pos_vbo.bind()
-    col_vbo = vbo.VBO(data=col, usage=GL_DYNAMIC_DRAW, target=GL_ARRAY_BUFFER)
-    col_vbo.bind()
+    gl_position = vbo.VBO(data=np_position, usage=GL_DYNAMIC_DRAW, target=GL_ARRAY_BUFFER)
+    gl_position.bind()
+    gl_color = vbo.VBO(data=np_color, usage=GL_DYNAMIC_DRAW, target=GL_ARRAY_BUFFER)
+    gl_color.bind()
 
-    return (pos_vbo, col_vbo, vel)
+    return (gl_position, gl_color, np_velocity)
 
 def on_timer(t):
     glutTimerFunc(t, on_timer, t)
@@ -92,10 +92,10 @@ def on_mouse_move(x, y):
 def on_display():
     """Render the particles"""        
     # Update or particle positions by calling the OpenCL kernel
-    cl.enqueue_acquire_gl_objects(queue, gl_objects)
-    kernelargs = (pos_cl, col_cl, vel_cl, pos_gen_cl, vel_gen_cl, numpy.float32(time_step))
+    cl.enqueue_acquire_gl_objects(queue, cl_gl_objects)
+    kernelargs = (cl_gl_position, cl_gl_color, vel_cl, pos_gen_cl, vel_gen_cl, numpy.float32(time_step))
     program.particle_fountain(queue, (num_particles,), None, *(kernelargs))
-    cl.enqueue_release_gl_objects(queue, gl_objects)
+    cl.enqueue_release_gl_objects(queue, cl_gl_objects)
     queue.finish()
     glFlush()
 
@@ -116,10 +116,10 @@ def on_display():
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
     #setup the VBOs
-    col_vbo.bind()
-    glColorPointer(4, GL_FLOAT, 0, col_vbo)
-    pos_vbo.bind()
-    glVertexPointer(4, GL_FLOAT, 0, pos_vbo)
+    gl_color.bind()
+    glColorPointer(4, GL_FLOAT, 0, gl_color)
+    gl_position.bind()
+    glVertexPointer(4, GL_FLOAT, 0, gl_position)
     glEnableClientState(GL_VERTEX_ARRAY)
     glEnableClientState(GL_COLOR_ARRAY)
 
@@ -135,39 +135,39 @@ def on_display():
 
 window = glut_window()
 
-(pos_vbo, col_vbo, vel) = initial_buffers(num_particles)
+(gl_position, gl_color, np_velocity) = initial_buffers(num_particles)
 
 platform = cl.get_platforms()[0]
 context = cl.Context(properties=[(cl.context_properties.PLATFORM, platform)] + get_gl_sharing_context_properties())  
 queue = cl.CommandQueue(context)
 
 # Set up vertex buffer objects and share them with OpenCL as GLBuffers
-pos_cl = cl.GLBuffer(context, mf.READ_WRITE, int(pos_vbo.buffers[0]))
-col_cl = cl.GLBuffer(context, mf.READ_WRITE, int(col_vbo.buffers[0]))
-gl_objects = [pos_cl, col_cl]
+cl_gl_position = cl.GLBuffer(context, mf.READ_WRITE, int(gl_position.buffers[0]))
+cl_gl_color = cl.GLBuffer(context, mf.READ_WRITE, int(gl_color.buffers[0]))
+cl_gl_objects = [cl_gl_position, cl_gl_color]
 # Pure OpenCL arrays
-vel_cl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=vel)
-pos_gen_cl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=pos_vbo.data)
-vel_gen_cl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=vel)
+vel_cl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np_velocity)
+pos_gen_cl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=gl_position.data)
+vel_gen_cl = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np_velocity)
 
-kernel = """__kernel void particle_fountain(__global float4* pos, __global float4* color, __global float4* vel, __global float4* pos_gen, __global float4* vel_gen, float time_step)
+kernel = """__kernel void particle_fountain(__global float4* position, __global float4* color, __global float4* velocity, __global float4* position_gen, __global float4* vel_gen, float time_step)
 {
     //get our index in the array
     unsigned int i = get_global_id(0);
     //copy position and velocity for this iteration to a local variable
     //note: if we were doing many more calculations we would want to have opencl
     //copy to a local memory array to speed up memory access (this will be the subject of a later tutorial)
-    float4 p = pos[i];
-    float4 v = vel[i];
+    float4 p = position[i];
+    float4 v = velocity[i];
 
     //we've stored the life in the fourth component of our velocity array
-    float life = vel[i].w;
+    float life = velocity[i].w;
     //decrease the life by the time step (this value could be adjusted to lengthen or shorten particle life
     life -= time_step;
     //if the life is 0 or less we reset the particle's values back to the original values and set life to 1
     if(life <= 0.f)
     {
-        p = pos_gen[i];
+        p = position_gen[i];
         v = vel_gen[i];
         life = 1.0f;    
     }
@@ -183,8 +183,8 @@ kernel = """__kernel void particle_fountain(__global float4* pos, __global float
     v.w = life;
 
     //update the arrays with our newly computed values
-    pos[i] = p;
-    vel[i] = v;
+    position[i] = p;
+    velocity[i] = v;
 
     //you can manipulate the color based on properties of the system
     //here we adjust the alpha

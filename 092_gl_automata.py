@@ -20,7 +20,7 @@ def glut_window():
     glutInit()
     glutInitWindowSize(800, 200)
     glutInitWindowPosition(0, 0)
-    window = glutCreateWindow('OpenCL/OpenGL Interop')
+    window = glutCreateWindow('Cellular Automata')
     glutDisplayFunc(on_display)
     glutTimerFunc(30, on_timer, 30)
     glClearColor(1, 1, 1, 1)  # Set the background color to white
@@ -33,20 +33,27 @@ def glut_window():
 
     return(window)
 
-def initial_buffer():
+def initial_buffers():
 
-    numpy_array = numpy.ndarray((num_points, 2), dtype=numpy.float32)
-    numpy_array[:,:] = [0.,1.]
-    gl_buffer = vbo.VBO(data=numpy_array, usage=GL_DYNAMIC_DRAW, target=GL_ARRAY_BUFFER)
+    data = numpy.ndarray((num_points, 2), dtype=numpy.float32)
+    data[:,:] = [0.,1.]
+
+    cl_buffer = cl.Buffer(context, cl.mem_flags.COPY_HOST_PTR, hostbuf=data)
+
+    gl_buffer = vbo.VBO(data=data, usage=GL_DYNAMIC_DRAW, target=GL_ARRAY_BUFFER)
     # gl_buffer.bind()
+
+
 
     buffer_name = glGenBuffers(1)  # Generate the OpenGL Buffer name
     glBindBuffer(GL_ARRAY_BUFFER, buffer_name) # Bind the vertex buffer to a target
     rawGlBufferData(GL_ARRAY_BUFFER, num_points * 2 * 4, None, GL_DYNAMIC_DRAW) # Allocate memory for the buffer
     glEnableClientState(GL_VERTEX_ARRAY)  # The vertex array is enabled for client writing and used for rendering
     glVertexPointer(2, GL_FLOAT, 0, None)  # Define an array of vertex data (size xyz, type, stride, pointer)
-    cl_gl_buffer = cl.GLBuffer(context, cl.mem_flags.READ_WRITE, int(buffer_name))
-    return cl_gl_buffer
+
+    cl_gl_buffer = cl.GLBuffer(context, cl.mem_flags.READ_WRITE, int(gl_buffer.buffers[0]))
+
+    return (cl_buffer, gl_buffer, cl_gl_buffer)
 
 def on_timer(t):
     glutTimerFunc(t, on_timer, t)
@@ -76,7 +83,7 @@ platform = cl.get_platforms()[0]
 context = cl.Context(properties=[(cl.context_properties.PLATFORM, platform)] + get_gl_sharing_context_properties())
 queue = cl.CommandQueue(context)
 
-cl_gl_buffer = initial_buffer()
+(cl_buffer, gl_buffer, cl_gl_buffer) = initial_buffers()
 
 kernel = """__kernel void generate_sin(__global float2* a, float offset)
 {
