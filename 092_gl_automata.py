@@ -14,7 +14,6 @@ import sys
 num_points = 10000
 width = 800
 height = 200
-offset = .01
 
 def glut_window():
     glutInit()
@@ -57,7 +56,7 @@ def on_timer(t):
 
 def on_display():
     cl.enqueue_acquire_gl_objects(queue, [cl_gl_buffer])
-    program.generate_sin(queue, (num_points,), None, cl_gl_buffer, numpy.float32(offset))
+    program.generate_sin(queue, (num_points,), None, cl_gl_buffer)
     cl.enqueue_release_gl_objects(queue, [cl_gl_buffer])
     queue.finish()
     glFlush()
@@ -81,14 +80,14 @@ queue = cl.CommandQueue(context)
 
 (cl_buffer, gl_buffer, cl_gl_buffer) = initial_buffers()
 
-kernel = """__kernel void generate_sin(__global float2* a, float offset)
+kernel = """__kernel void generate_sin(__global float2* a)
 {
     int id = get_global_id(0);
     int global_size = get_global_size(0);
     float r = (float)id / (float)global_size;
     float x = r * 16.0f * 3.1415f;
     a[id].x = r * 2.0f - 1.0f;
-    a[id].y = native_sin(x) + offset;
+    a[id].y = native_sin(x);
 }"""
 program = cl.Program(context, kernel).build()
 

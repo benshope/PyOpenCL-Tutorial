@@ -88,10 +88,10 @@ def on_mouse_move(x, y):
 def on_display():
     """Render the particles"""        
     # Update or particle positions by calling the OpenCL kernel
-    cl.enqueue_acquire_gl_objects(queue, cl_gl_objects)
-    kernelargs = (cl_gl_position, cl_gl_color, cl_velocity, cl_position_gen, cl_velocity_gen, numpy.float32(time_step))
+    cl.enqueue_acquire_gl_objects(queue, [cl_gl_position, cl_gl_color])
+    kernelargs = (cl_gl_position, cl_gl_color, cl_velocity, cl_start_position, cl_start_velocity, numpy.float32(time_step))
     program.particle_fountain(queue, (num_particles,), None, *(kernelargs))
-    cl.enqueue_release_gl_objects(queue, cl_gl_objects)
+    cl.enqueue_release_gl_objects(queue, [cl_gl_position, cl_gl_color])
     queue.finish()
     glFlush()
 
@@ -138,55 +138,42 @@ context = cl.Context(properties=[(cl.context_properties.PLATFORM, platform)] + g
 queue = cl.CommandQueue(context)
 
 cl_velocity = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np_velocity)
-cl_position_gen = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np_position)
-cl_velocity_gen = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np_velocity)
+cl_start_position = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np_position)
+cl_start_velocity = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np_velocity)
 
 cl_gl_position = cl.GLBuffer(context, mf.READ_WRITE, int(gl_position.buffers[0]))
 cl_gl_color = cl.GLBuffer(context, mf.READ_WRITE, int(gl_color.buffers[0]))
-cl_gl_objects = [cl_gl_position, cl_gl_color]
 
-kernel = """__kernel void particle_fountain(__global float4* position, __global float4* color, __global float4* velocity, __global float4* position_gen, __global float4* vel_gen, float time_step)
+kernel = """__kernel void particle_fountain(__global float4* cl_gl_position, 
+                                            __global float4* cl_gl_color, 
+                                            __global float4* velocity, 
+                                            __global float4* start_position, 
+                                            __global float4* start_velocity, 
+                                            float time_step)
 {
-    //get our index in the array
     unsigned int i = get_global_id(0);
-    //copy position and velocity for this iteration to a local variable
-    //note: if we were doing many more calculations we would want to have opencl
-    //copy to a local memory array to speed up memory access (this will be the subject of a later tutorial)
-    float4 p = position[i];
+    float4 p = cl_gl_position[i];
     float4 v = velocity[i];
-
-    //we've stored the life in the fourth component of our velocity array
     float life = velocity[i].w;
-    //decrease the life by the time step (this value could be adjusted to lengthen or shorten particle life
     life -= time_step;
-    //if the life is 0 or less we reset the particle's values back to the original values and set life to 1
     if(life <= 0.f)
     {
-        p = position_gen[i];
-        v = vel_gen[i];
+        p = start_position[i];
+        v = start_velocity[i];
         life = 1.0f;    
     }
 
-    //we use a first order euler method to integrate the velocity and position (i'll expand on this in another tutorial)
-    //update the velocity to be affected by "gravity" in the z direction
     v.z -= 9.8f*time_step;
-    //update the position with the new velocity
     p.x += v.x*time_step;
     p.y += v.y*time_step;
     p.z += v.z*time_step;
-    //store the updated life in the velocity array
     v.w = life;
 
-    //update the arrays with our newly computed values
-    position[i] = p;
+    cl_gl_position[i] = p;
     velocity[i] = v;
 
-    //you can manipulate the color based on properties of the system
-    //here we adjust the alpha
-    color[i].w = life;
-
+    cl_gl_color[i].w = life; /* Fade points as life decreases */
 }"""
-
 program = cl.Program(context, kernel).build()
 
 glutMainLoop()
