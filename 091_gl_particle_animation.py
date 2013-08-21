@@ -22,7 +22,7 @@ initial_translate = {'x': 0., 'y': 0., 'z': -2.5}
 
 def glut_window():
     glutInit(sys.argv)
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
+    # glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
     glutInitWindowSize(width, height)
     glutInitWindowPosition(0, 0)
     window = glutCreateWindow("Particle Simulation")

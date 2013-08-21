@@ -1,4 +1,4 @@
-# Visualize a sine wave
+# Visualize cellular automata
 
 import pyopencl as cl
 mf = cl.mem_flags
@@ -20,15 +20,15 @@ def glut_window():
     glutInitWindowSize(800, 200)
     glutInitWindowPosition(0, 0)
     window = glutCreateWindow('Cellular Automata')
+
     glutDisplayFunc(on_display)
     glutTimerFunc(30, on_timer, 30)
-    glClearColor(1, 1, 1, 1)  # Set the background color to white
-    glColor(0, 0, 0)  # Set the foreground color to black
+    # glClearColor(1, 1, 1, 1)  # Set the background color to white
+    # glColor(0, 0, 0)  # Set the foreground color to black
 
     glViewport(0, 0, width, height)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    glMatrixMode(GL_MODELVIEW)
 
     return(window)
 
@@ -71,7 +71,6 @@ def on_display():
     glDrawArrays(GL_POINTS, 0, num_points)
     # glDisableClientState(GL_VERTEX_ARRAY)
     glutSwapBuffers()
-
 
 window = glut_window()
 platform = cl.get_platforms()[0]
