@@ -2,11 +2,12 @@ import pyopencl as cl
 from time import time
 import numpy
 
-block_size = 16
+block_size = 16  # XXX Why sixteen? XXX
 
 context = cl.create_some_context()
 queue = cl.CommandQueue(context, properties=cl.command_queue_properties.PROFILING_ENABLE)
 
+# XXX What do all these options do? XXX
 if False:
     a_height = 4096
     #a_height = 1024
