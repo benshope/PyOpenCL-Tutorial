@@ -57,10 +57,6 @@ kernel = """
 #define WC WB  // Matrix C width
 #define HC HA  // Matrix C height
 
-/* Matrix multiplication: C = A * B. */
-#define AS(j, i) As[i + j * BLOCK_SIZE]
-#define BS(j, i) Bs[i + j * BLOCK_SIZE]
-
 ////////////////////////////////////////////////////////////////////////////////
 //! Matrix multiplication on the device: C = A * B
 //! WA is A's width and WB is B's width
@@ -108,8 +104,8 @@ matrixMul( __global float* C, __global float* A, __global float* B)
         // Load the matrices from device memory
         // to shared memory; each thread loads
         // one element of each matrix
-        AS(ty, tx) = A[a + WA * ty + tx];
-        BS(ty, tx) = B[b + WB * ty + tx];
+        As[tx + ty * BLOCK_SIZE] = A[a + WA * ty + tx];
+        Bs[tx + ty * BLOCK_SIZE] = B[b + WB * ty + tx];
 
         // Synchronize to make sure the matrices are loaded
         barrier(CLK_LOCAL_MEM_FENCE);
@@ -118,7 +114,7 @@ matrixMul( __global float* C, __global float* A, __global float* B)
         // each thread computes one element
         // of the block sub-matrix
         for (int k = 0; k < BLOCK_SIZE; ++k)
-            Csub += AS(ty, k) * BS(k, tx);
+            Csub += As[k + ty * BLOCK_SIZE] * Bs[tx + k * BLOCK_SIZE];
 
         // Synchronize to make sure that the preceding
         // computation is done before loading two new
