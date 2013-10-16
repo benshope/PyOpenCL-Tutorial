@@ -6,7 +6,8 @@ queue = cl.CommandQueue(context, properties=cl.command_queue_properties.PROFILIN
 
 overhead, latency = performance.get_profiling_overhead(context)
 
-# XXX Find out what all these numbers mean XXX
+# XXX Find out where this test code is coming from XXX
+
 print("\n\nCommand Latency: {} s".format(latency))
 print("Profiling Overhead: {} s -> {}".format(overhead, 100*overhead/latency))  
 
@@ -22,5 +23,5 @@ for transfer_type in [
     print("\n" + transfer_type.__name__)
     print("    Latency: {0} s".format(performance.transfer_latency(queue, transfer_type)))
     for exponent in range(6, 28, 2):
-        bytes = 1<<exponent  # Two to the power of exponent XXX Is exponent the right word? XXX
+        bytes = 1<<exponent  # This operation means 'two to the exponent' (2^exponent)
         print("    Bandwidth at {0} Bytes: {1} GB/s".format(bytes, performance.transfer_bandwidth(queue, transfer_type, bytes)/1e9))
