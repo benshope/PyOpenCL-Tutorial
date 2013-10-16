@@ -7,26 +7,10 @@ block_size = 16  # XXX Why sixteen? XXX
 context = cl.create_some_context()
 queue = cl.CommandQueue(context, properties=cl.command_queue_properties.PROFILING_ENABLE)
 
-# XXX What do all these options do? XXX
-if False:
-    a_height = 4096
-    #a_height = 1024
-    a_width = 2048
-    #a_width = 256
-    #b_height == a_width
-    b_width = a_height
-elif False:
-    # like PyCUDA
-    a_height = 2516
-    a_width = 1472
-    b_height = a_width
-    b_width = 2144
-else:
-    # CL SDK
-    a_width = 50*block_size
-    a_height = 100*block_size
-    b_width = 50*block_size
-    b_height = a_width
+a_width = 50*block_size
+a_height = 100*block_size
+b_width = 50*block_size
+b_height = a_width
 
 c_width = b_width
 c_height = a_height
