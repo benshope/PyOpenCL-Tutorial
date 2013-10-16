@@ -2,7 +2,7 @@ import pyopencl as cl
 from time import time
 import numpy
 
-block_size = 16  # XXX Why sixteen? XXX
+block_size = 32  # XXX Why sixteen? XXX
 
 context = cl.create_some_context()
 queue = cl.CommandQueue(context, properties=cl.command_queue_properties.PROFILING_ENABLE)
@@ -29,7 +29,6 @@ else:
     options = ""
 
 kernel = """
-
 #define BLOCK_SIZE %(block_size)d  // Thread block size
 
 // Matrix dimensions
