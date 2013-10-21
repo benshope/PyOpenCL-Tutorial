@@ -19,9 +19,7 @@ h_a = numpy.random.rand(a_height, a_width).astype(numpy.float32)
 h_b = numpy.random.rand(b_height, b_width).astype(numpy.float32)
 h_c = numpy.empty((c_height, c_width)).astype(numpy.float32)
 
-
-kernel_params = {"block_size": block_size,
-        "w_a":a_width, "h_a":a_height, "w_b":b_width}
+kernel_params = {"block_size": block_size, "w_a":a_width, "h_a":a_height, "w_b":b_width}
 
 if "NVIDIA" in queue.device.vendor:
     options = "-cl-mad-enable -cl-fast-relaxed-math"

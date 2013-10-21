@@ -1,4 +1,5 @@
 # Visualization of particles with gravity
+# Source: http://enja.org/2010/08/27/adventures-in-opencl-part-2-particles-with-opengl/
 
 import pyopencl as cl # OpenCL - GPU computing interface
 mf = cl.mem_flags
@@ -22,7 +23,7 @@ initial_translate = {'x': 0., 'y': 0., 'z': -2.5}
 
 def glut_window():
     glutInit(sys.argv)
-    # glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
     glutInitWindowSize(width, height)
     glutInitWindowPosition(0, 0)
     window = glutCreateWindow("Particle Simulation")

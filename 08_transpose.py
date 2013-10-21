@@ -46,7 +46,7 @@ class TransposeWithLocal:
         #define A_BLOCK_STRIDE (BLOCK_SIZE * a_width)
         #define A_T_BLOCK_STRIDE (BLOCK_SIZE * a_height)
 
-        __kernel __attribute__((reqd_work_group_size(BLOCK_SIZE, BLOCK_SIZE, 1)))
+        __kernel __attribute__((reqd_work_group_size(BLOCK_SIZE, 1, 1)))
         void transpose(
           __global float *a_t, __global float *a,
           unsigned a_width, unsigned a_height,
