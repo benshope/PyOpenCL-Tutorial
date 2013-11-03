@@ -7,10 +7,10 @@ block_size = 32  # XXX Why sixteen? XXX
 context = cl.create_some_context()
 queue = cl.CommandQueue(context, properties=cl.command_queue_properties.PROFILING_ENABLE)
 
-a_width = 50*block_size
-a_height = 100*block_size
-b_width = 50*block_size
-b_height = a_width
+a_width = 2048
+a_height = 2048
+b_width = 2048
+b_height = 2048
 
 c_width = b_width
 c_height = a_height
