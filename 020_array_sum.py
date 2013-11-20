@@ -1,4 +1,4 @@
-# Use OpenCL To Add Two Random Arrays (Using PyOpenCL Arrays)
+# Use OpenCL To Add Two Random Arrays (Using More PyOpenCL Sugar)
 
 import pyopencl as cl  # Import the OpenCL GPU computing API
 import pyopencl.array as cl_array  # Import PyOpenCL Array (a Numpy array plus an OpenCL buffer object)
