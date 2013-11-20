@@ -1,15 +1,16 @@
-# Use OpenCL To Add Two Random Arrays (Using More PyOpenCL Sugar)
+# Use OpenCL To Add Two Random Arrays (This Way Hides Details)
 
 import pyopencl as cl  # Import the OpenCL GPU computing API
-import pyopencl.array as cl_array  # Import PyOpenCL Array (a Numpy array plus an OpenCL buffer object)
-import numpy  # Import Numpy number tools
+import pyopencl.array as pycl_array  # Import PyOpenCL Array (a Numpy array plus an OpenCL buffer object)
+import numpy as np# Import Numpy number tools
 
 context = cl.create_some_context()  # Initialize the Context
 queue = cl.CommandQueue(context)  # Instantiate a Queue
 
-a = cl_array.to_device(queue, numpy.random.rand(50000).astype(numpy.float32))  # Create a random pyopencl array
-b = cl_array.to_device(queue, numpy.random.rand(50000).astype(numpy.float32))  # Create a random pyopencl array
-c = cl_array.empty_like(a)  # Create an empty pyopencl destination array
+a = pycl_array.to_device(queue, np.random.rand(50000).astype(numpy.float32))
+b = pycl_array.to_device(queue, np.random.rand(50000).astype(numpy.float32))  
+# Create two random pyopencl arrays
+c = pycl_array.empty_like(a)  # Create an empty pyopencl destination array
 
 program = cl.Program(context, """
 __kernel void sum(__global const float *a, __global const float *b, __global float *c)
