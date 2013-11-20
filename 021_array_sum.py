@@ -1,4 +1,4 @@
-# Use OpenCL To Add Two Random Arrays
+# Use OpenCL To Add Two Random Arrays (The More Explicit Way)
 
 import pyopencl as cl  # Import the OpenCL GPU computing API
 import numpy as np  # Import Np number tools
