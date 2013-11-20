@@ -12,8 +12,8 @@ I have tried to write the code and the comments in a way that they could be sepa
 
 PyOpenCL is a tool that is worth learning.  Python allows exceptional clarity-of-expression while OpenCL provides access to all the power modern hardware can deliver.  Together these two languages are like a double-bladed lightsaber in a world full of butter knives.
 
-# Index
+# Index (Completed Lessons)
 
 - 010 Introspection - Find out about your computer's OpenCL situation
-- 020 Array Sum - Use OpenCL To Add Two Large Random Arrays
-- 021 Array Sum - Use OpenCL To Add Two Large Random Array (Using PyOpenCL Arrays)
+- 020 Array Sum - Use OpenCL To Add Two Large Random Arrays - Hiding Details
+- 021 Array Sum - Use OpenCL To Add Two Large Random Arrays - Showing Details
