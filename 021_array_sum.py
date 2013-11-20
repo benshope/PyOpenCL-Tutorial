@@ -5,7 +5,7 @@ import numpy as np  # Import Np number tools
 
 platform = cl.get_platforms()[0]  # Select the first platform [0]
 device = platform.get_devices()[0]  # Select the first device on this platform [0]
-context = cl.Context([device]) # Create a context with your device
+context = cl.Context([device])  # Create a context with your device
 queue = cl.CommandQueue(context)  # Create a command queue with your context
 
 np_a = np.random.rand(50000).astype(np.float32)  # Create a random np array
