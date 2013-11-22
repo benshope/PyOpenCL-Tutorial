@@ -1,14 +1,14 @@
 # Test the speed of your PyOpenCL program
+from time import time  # Import time tools
 
 import pyopencl as cl  # Import the OpenCL GPU computing API
-import numpy  # Import number tools
-from time import time  # Import time tools
+import numpy as np  # Import number tools
  
-a = numpy.random.rand(1000).astype(numpy.float32)  # Create a random array to add
-b = numpy.random.rand(1000).astype(numpy.float32)  # Create a random array to add
+a = np.random.rand(1000).astype(np.float32)  # Create a random array to add
+b = np.random.rand(1000).astype(np.float32)  # Create a random array to add
 
 def cpu_array_sum(a, b):  # Sum two arrays on the CPU
-    c_cpu = numpy.empty_like(a)  # Create the destination array
+    c_cpu = np.empty_like(a)  # Create the destination array
     cpu_start_time = time()  # Get the CPU start time
     for i in range(1000):
             for j in range(1000):  # 1000 times add each number and store it
@@ -38,7 +38,7 @@ def gpu_array_sum(a, b):
     event.wait()  # Wait until the event finishes XXX
     elapsed = 1e-9*(event.profile.end - event.profile.start)  # Calculate the time it took to execute the kernel
     print("GPU Kernel Time: {0} s".format(elapsed))  # Print the time it took to execute the kernel
-    c_gpu = numpy.empty_like(a)  # Create an empty array the same size as array a
+    c_gpu = np.empty_like(a)  # Create an empty array the same size as array a
     cl.enqueue_read_buffer(queue, c_buffer, c_gpu).wait()  # Read back the data from GPU memory into array c_gpu
     gpu_end_time = time()  # Get the GPU end time
     print("GPU Time: {0} s".format(gpu_end_time - gpu_start_time))  # Print the time the GPU program took, including both memory copies
