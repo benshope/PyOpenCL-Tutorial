@@ -1,6 +1,5 @@
 import pyopencl as cl
 import pyopencl.characterize.performance as performance
-# XXX Find out more about pyopencl.characterize - why does this exist? XXX
 
 context = cl.create_some_context()
 queue = cl.CommandQueue(context, properties=cl.command_queue_properties.PROFILING_ENABLE)
