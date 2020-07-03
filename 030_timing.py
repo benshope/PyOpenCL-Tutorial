@@ -39,7 +39,7 @@ def gpu_array_sum(a, b):
     elapsed = 1e-9*(event.profile.end - event.profile.start)  # Calculate the time it took to execute the kernel
     print("GPU Kernel Time: {0} s".format(elapsed))  # Print the time it took to execute the kernel
     c_gpu = np.empty_like(a)  # Create an empty array the same size as array a
-    cl.enqueue_read_buffer(queue, c_buffer, c_gpu).wait()  # Read back the data from GPU memory into array c_gpu
+    cl.enqueue_copy(queue, c_buffer, c_gpu).wait()  # Read back the data from GPU memory into array c_gpu
     gpu_end_time = time()  # Get the GPU end time
     print("GPU Time: {0} s".format(gpu_end_time - gpu_start_time))  # Print the time the GPU program took, including both memory copies
     return c_gpu  # Return the sum of the two arrays

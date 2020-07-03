@@ -36,7 +36,7 @@ np_arrays = [np_a, np_b, np_c]
 cl_arrays = [cl_a, cl_b, cl_c]
 
 for x in range(3):
-    cl.enqueue_copy(queue, cl_arrays[x], np_arrays[x])
+    cl.enqueue_copy(queue, np_arrays[x], cl_arrays[x])
 queue.finish()
 # Copy the data for array c back to the host
 

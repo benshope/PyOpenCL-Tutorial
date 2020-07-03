@@ -7,14 +7,14 @@ import numpy  # Import Numpy number tools
 context = cl.create_some_context()  # Initialize the Context
 queue = cl.CommandQueue(context)  # Instantiate a Queue
 
-a = cl_array.to_device(queue, numpy.random.randn(10).astype(numpy.float32))  # Create a random pyopencl array
-b = cl_array.to_device(queue, numpy.random.randn(10).astype(numpy.float32))  # Create a random pyopencl array
+a = cl_array.to_device(queue, numpy.random.randn(50000).astype(numpy.float32))  # Create a random pyopencl array
+b = cl_array.to_device(queue, numpy.random.randn(50000).astype(numpy.float32))  # Create a random pyopencl array
 c = cl_array.empty_like(a)  # Create an empty pyopencl destination array
 
 sum = cl.elementwise.ElementwiseKernel(context, "float *a, float *b, float *c", "c[i] = a[i] + b[i]", "sum")
 # Create an elementwise kernel object
 #  - Arguments: a string formatted as a C argument list
-#  - Operation: a snippet of C that carries out the desired map operatino
+#  - Operation: a snippet of C that carries out the desired map operation
 #  - Name: the fuction name as which the kernel is compiled
 
 sum(a, b, c)  # Call the elementwise kernel
